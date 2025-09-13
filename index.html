@@ -1,0 +1,1859 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Nic DC - Business Gap Finder SaaS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coach-nic-dark-blue: #002D62;
+            --coach-nic-medium-blue: #6B99C5;
+            --coach-nic-light-gold: #EBD8B2;
+            --app-neutral-bg: #f8f9fa;
+            --app-border-color: #e0e0e0;
+            --app-text-color: #333;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--app-neutral-bg); color: var(--app-text-color); }
+        .app-container { background-color: white; border-radius: 0.75rem; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .header-section { border-bottom: 4px solid var(--coach-nic-dark-blue); padding-bottom: 0.75rem; margin-bottom: 1.5rem; }
+        .tab-button { padding: 1rem 0.75rem; font-size: 1.1rem; transition: all 0.2s ease-in-out; white-space: nowrap; }
+        .tab-active { border-bottom: 3px solid var(--coach-nic-dark-blue); color: var(--coach-nic-dark-blue); font-weight: 600; }
+        .tab-inactive { border-bottom: 3px solid transparent; color: #6B7280; cursor: pointer; }
+        .tab-inactive:hover { color: var(--coach-nic-medium-blue); border-color: var(--coach-nic-medium-blue); }
+        button.primary-btn { background-color: var(--coach-nic-dark-blue); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; transition: background-color 0.2s ease-in-out; white-space: nowrap; border: none; cursor: pointer; }
+        button.primary-btn:hover { background-color: #001f40; }
+        button.secondary-btn { background-color: var(--coach-nic-medium-blue); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; transition: background-color 0.2s ease-in-out; white-space: nowrap; border: none; cursor: pointer; }
+        button.secondary-btn:hover { background-color: #5a8ab8; }
+        .subscription-badge { background-color: var(--coach-nic-dark-blue); color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .positive { color: #22c55e; font-weight: 600; }
+        .negative { color: #ef4444; font-weight: 600; }
+        .section-title { background-color: var(--coach-nic-dark-blue); color: white; font-weight: bold; text-align: center; padding: 0.75rem; }
+        .analysis-box { border: 2px solid var(--coach-nic-dark-blue); padding: 1rem; background-color: white; height: 100%; border-radius: 0.5rem; }
+        .analysis-box h4 { font-weight: bold; text-align: center; background-color: var(--coach-nic-light-gold); padding: 0.5rem; margin-bottom: 0.75rem; color: var(--app-text-color); }
+        .analysis-box textarea { width: 100%; min-height: 180px; border: 1px solid #ccc; padding: 5px; resize: vertical; }
+        input, textarea, select { border: 1px solid var(--app-border-color); border-radius: 0.375rem; padding: 0.5rem 0.75rem; transition: border-color 0.2s ease-in-out; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--coach-nic-medium-blue); box-shadow: 0 0 0 2px rgba(107, 153, 197, 0.3); }
+        .notification { position: fixed; top: 20px; right: 20px; background-color: var(--coach-nic-dark-blue); color: white; padding: 1rem; border-radius: 0.5rem; z-index: 1000; transform: translateX(120%); transition: transform 0.3s ease-in-out; }
+        .notification.show { transform: translateX(0); }
+        #revenue-drivers-tbody input[type="number"] { width: 100%; text-align: right; padding: 0.25rem; font-size: 0.75rem; }
+        .sales-metrics-table input { text-align: right; }
+        .funnel-toggle-btn { padding: 0.25rem 0.75rem; border: 1px solid #ccc; background-color: #f8f9fa; cursor: pointer; }
+        .funnel-toggle-btn.active { background-color: var(--coach-nic-dark-blue); color: white; border-color: var(--coach-nic-dark-blue); }
+        input.negative { background-color: #fee2e2; border-color: #fca5a5; }
+        .checklist-table th { background-color: #eef2ff; padding: 0.75rem; text-align: left; }
+        .checklist-table td { padding: 0.5rem; border-bottom: 1px solid #e5e7eb; }
+        .checklist-category { font-weight: bold; background-color: #f9fafb; }
+        .checklist-category td { padding-top: 1rem; padding-bottom: 0.5rem; }
+        .editable-behavior { cursor: pointer; }
+        .editable-behavior:hover { background-color: #fefce8; }
+        
+        /* NEW: Mobile optimization styles */
+        @media (max-width: 768px) {
+            .mobile-optimized .tab-button { padding: 0.5rem 0.5rem; font-size: 0.9rem; }
+            .mobile-optimized input, .mobile-optimized textarea { font-size: 16px; } /* Prevent zoom on iOS */
+            .mobile-optimized .grid { grid-template-columns: 1fr; }
+        }
+        
+        /* NEW: Industry template and team styles */
+        .industry-tag { background-color: var(--coach-nic-light-gold); color: var(--coach-nic-dark-blue); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; }
+        .team-member-card { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 0.75rem; border-radius: 0.5rem; }
+    </style>
+</head>
+<body class="p-2 md:p-6">
+    <div id="notification" class="notification"></div>
+    
+    <div id="landing-screen" class="min-h-screen flex items-center justify-center">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-2" style="color: var(--coach-nic-dark-blue);">Business Gap Finder™</h1>
+                <p class="text-xl text-gray-600 mb-4">Performance Management SaaS Platform</p>
+                <p class="text-sm text-gray-500 italic">"Your gift will make room in the marketplace, but performance management will keep you there!" - Coach Nic</p>
+            </div>
+            <div id="login-form" class="bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-6 text-center" style="color: var(--coach-nic-dark-blue);">Sign In</h2>
+                
+                <!-- EXISTING Demo Accounts -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <h3 class="font-bold text-blue-800 mb-2">Test Drive the Platform</h3>
+                    <p class="text-sm text-blue-700 mb-3">Click any button below to instantly test different user types:</p>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="font-medium">Business Owner Demo:</span><button onclick="loadDemo('client')" class="text-blue-600 hover:underline font-semibold">CLIENT DEMO</button></div>
+                        <div class="flex justify-between"><span class="font-medium">Coach Demo:</span><button onclick="loadDemo('coach')" class="text-blue-600 hover:underline font-semibold">COACH DEMO</button></div>
+                        <div class="flex justify-between"><span class="font-medium">Franchise Demo:</span><button onclick="loadDemo('franchise')" class="text-blue-600 hover:underline font-semibold">FRANCHISE DEMO</button></div>
+                    </div>
+                </div>
+                
+                <!-- NEW: Industry Templates -->
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                    <h3 class="font-bold text-green-800 mb-2">🏭 Industry Templates</h3>
+                    <p class="text-sm text-green-700 mb-3">Or start fresh with an industry-specific template:</p>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <button onclick="loadIndustryTemplate('consulting')" class="text-green-600 hover:underline font-semibold">📊 Professional Consulting</button>
+                        <button onclick="loadIndustryTemplate('restaurant')" class="text-green-600 hover:underline font-semibold">🍽️ Restaurant/Food</button>
+                        <button onclick="loadIndustryTemplate('retail')" class="text-green-600 hover:underline font-semibold">🏪 Retail Store</button>
+                        <button onclick="loadIndustryTemplate('fitness')" class="text-green-600 hover:underline font-semibold">💪 Fitness/Wellness</button>
+                        <button onclick="loadIndustryTemplate('coaching')" class="text-green-600 hover:underline font-semibold">🎯 Business Coaching</button>
+                        <button onclick="loadIndustryTemplate('franchise')" class="text-green-600 hover:underline font-semibold">🏢 Multi-Location</button>
+                    </div>
+                </div>
+                
+                <form id="login-form-element" class="space-y-4">
+                    <div><label for="login-email" class="block text-sm font-medium">Email</label><input type="email" id="login-email" required class="mt-1 block w-full" placeholder="your@email.com"></div>
+                    <div><label for="login-password" class="block text-sm font-medium">Password</label><input type="password" id="login-password" required class="mt-1 block w-full" placeholder="Password"></div>
+                    <button type="submit" class="primary-btn w-full">Sign In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-screen" class="max-w-screen-2xl mx-auto app-container p-4 hidden">
+        <header class="flex flex-wrap justify-between items-center header-section">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold">BUSINESS GAP FINDER™</h1>
+                <div id="subscription-status" class="subscription-badge">Demo</div>
+            </div>
+            
+            <!-- ENHANCED Header with new buttons -->
+            <div class="flex flex-wrap items-center justify-end gap-x-2 gap-y-2 mt-2 sm:mt-0">
+                <div id="user-display" class="text-sm font-semibold p-2 rounded bg-gray-100"></div>
+                <div id="industry-display" class="industry-tag hidden">Industry</div>
+                <button id="team-members-btn" class="secondary-btn text-sm hidden">👥 Team</button>
+                <button id="benchmarks-btn" class="secondary-btn text-sm">📊 Benchmarks</button>
+                <button id="save-data" class="primary-btn text-sm">💾 Save</button>
+                <button id="download-pdf" class="primary-btn text-sm">📄 PDF</button>
+                <button onclick="location.reload()" class="secondary-btn text-sm">🔄 Reset</button>
+            </div>
+        </header>
+
+        <main>
+            <nav class="mb-8 border-b border-gray-300">
+                <div class="overflow-x-auto">
+                    <div class="flex flex-nowrap -mb-px" id="tab-container">
+                        <button class="tab-button tab-active" data-target="visual-dashboard-content">Visual Dashboard</button>
+                        <button class="tab-button tab-inactive" data-target="scorecard-content">Flash Scorecard</button>
+                        <button class="tab-button tab-inactive" data-target="analysis-content">Business Analysis</button>
+                        <button class="tab-button tab-inactive" data-target="plan-content">Action Plan</button>
+                        <button class="tab-button tab-inactive" data-target="sales-process-content">Sales Process</button>
+                        <button class="tab-button tab-inactive" data-target="management-rhythm-content">Management Rhythm</button>
+                        <button class="tab-button tab-inactive" data-target="order-system-content">Order System</button>
+                        <button class="tab-button tab-inactive" data-target="merchandising-content">Merchandising</button>
+                        <button class="tab-button tab-inactive" data-target="business-units-content">Team Management</button>
+                    </div>
+                </div>
+            </nav>
+
+            <div id="visual-dashboard-content" class="tab-content space-y-8">
+                 <h3 class="text-2xl font-bold" style="color: var(--coach-nic-dark-blue);">Performance at a Glance</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="chart-container"><canvas id="weeklyChart"></canvas></div>
+                    <div class="chart-container"><canvas id="driverChart"></canvas></div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="chart-container"><canvas id="progressChart"></canvas></div>
+                    <div class="chart-container"><canvas id="trendsChart"></canvas></div>
+                </div>
+            </div>
+            
+            <div id="scorecard-content" class="tab-content hidden space-y-8">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div><label class="block text-sm font-medium">Month</label><input type="text" id="month-of" class="mt-1 w-full"></div>
+                        <div><label class="block text-sm font-medium">Year</label><input type="number" id="year" class="mt-1 w-full"></div>
+                        <div><label class="block text-sm font-medium">Monthly Revenue Goal ($)</label><input type="number" id="monthly-revenue-goal" class="mt-1 w-full"></div>
+                        <div class="md:col-span-3"><label class="block text-sm font-medium">Revenue Drivers (comma-separated)</label><input type="text" id="revenue-drivers" class="mt-1 w-full"></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                        <label class="col-span-full md:col-span-1 font-semibold self-center">Weekly Goal %:</label>
+                        <div><label class="text-sm">Week 1</label><input type="number" id="week1-goal-percent" class="mt-1 w-full"></div>
+                        <div><label class="text-sm">Week 2</label><input type="number" id="week2-goal-percent" class="mt-1 w-full"></div>
+                        <div><label class="text-sm">Week 3</label><input type="number" id="week3-goal-percent" class="mt-1 w-full"></div>
+                        <div><label class="text-sm">Week 4</label><input type="number" id="week4-goal-percent" class="mt-1 w-full"></div>
+                        <div><label class="text-sm">Week 5</label><input type="number" id="week5-goal-percent" class="mt-1 w-full"></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md overflow-x-auto">
+                    <h3 class="text-2xl font-bold mb-4">Weekly Performance</h3>
+                    <table class="w-full">
+                        <thead>
+                           <tr>
+                                <th class="p-2 text-left text-sm font-semibold">WEEK</th>
+                                <th class="p-2 text-right text-sm font-semibold">REVENUE GOAL ($)</th>
+                                <th class="p-2 text-right text-sm font-semibold">ROLLOVER GAP ($)</th>
+                                <th class="p-2 text-right text-sm font-semibold">REVISED GOAL ($)</th>
+                                <th class="p-2 text-right text-sm font-semibold">ACTUAL REVENUE ($)</th>
+                                <th class="p-2 text-right text-sm font-semibold">STATUS VS GOAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weekly-performance-tbody"></tbody>
+                        <tfoot class="border-t-2 border-gray-400 font-bold bg-gray-100">
+                           <tr>
+                                <td class="p-2">MONTH TOTAL</td>
+                                <td id="weekly-total-base-goal" class="p-2 text-right"></td>
+                                <td colspan="2"></td>
+                                <td id="weekly-total-actual" class="p-2 text-right"></td>
+                                <td id="weekly-total-status" class="p-2 text-right font-bold"></td>
+                           </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md overflow-x-auto">
+                    <h3 class="text-2xl font-bold mb-4">Revenue Drivers Performance</h3>
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="bg-yellow-200 p-2 text-center" rowspan="2">CATEGORY</th>
+                                <th class="bg-yellow-200 p-2 text-center" rowspan="2">REV % GOAL</th>
+                                <th class="bg-yellow-200 p-2 text-center" rowspan="2">REV % ACTUAL</th>
+                                <th class="bg-yellow-200 p-2 text-center" rowspan="2">MONTHLY GOAL ($)</th>
+                                <th class="bg-yellow-200 p-2 text-center" colspan="2">WEEK 1</th><th class="bg-yellow-200 p-2 text-center" colspan="2">WEEK 2</th>
+                                <th class="bg-yellow-200 p-2 text-center" colspan="2">WEEK 3</th><th class="bg-yellow-200 p-2 text-center" colspan="2">WEEK 4</th>
+                                <th class="bg-yellow-200 p-2 text-center" colspan="2">WEEK 5</th>
+                                <th class="bg-yellow-200 p-2 text-center" rowspan="2">MTD ACTUAL ($)</th><th class="bg-yellow-200 p-2 text-center" rowspan="2">STATUS VS GOAL</th>
+                            </tr>
+                            <tr>
+                                <th class="bg-yellow-200 p-1 text-xs">GOAL</th><th class="bg-yellow-200 p-1 text-xs">ACTUAL</th>
+                                <th class="bg-yellow-200 p-1 text-xs">GOAL</th><th class="bg-yellow-200 p-1 text-xs">ACTUAL</th>
+                                <th class="bg-yellow-200 p-1 text-xs">GOAL</th><th class="bg-yellow-200 p-1 text-xs">ACTUAL</th>
+                                <th class="bg-yellow-200 p-1 text-xs">GOAL</th><th class="bg-yellow-200 p-1 text-xs">ACTUAL</th>
+                                <th class="bg-yellow-200 p-1 text-xs">GOAL</th><th class="bg-yellow-200 p-1 text-xs">ACTUAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="revenue-drivers-tbody"></tbody>
+                        <tfoot class="font-bold bg-gray-100 border-t-2 border-gray-400">
+                           <tr>
+                                <td class="p-2">TOTAL</td><td id="driver-total-percent-goal" class="p-2 text-right"></td>
+                                <td class="p-2 text-right">100%</td><td id="driver-total-monthly-goal" class="p-2 text-right"></td>
+                                <td colspan="10"></td><td id="driver-total-mtd-actual" class="p-2 text-right"></td>
+                                <td id="driver-total-status" class="p-2 text-right"></td>
+                           </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div id="analysis-content" class="tab-content hidden space-y-8">
+                <div id="analysis-grid-container" class="grid grid-cols-1 xl:grid-cols-2 gap-4"></div>
+                <div id="sales-metrics-clues-container" class="mt-4"></div>
+                <div class="text-center"><button onclick="generateAIAnalysis()" class="primary-btn">🤖 Generate AI Analysis</button></div>
+                <div id="ai-analysis-result" class="hidden bg-blue-50 border-blue-200 rounded-lg p-4"></div>
+                
+                <div class="bg-white p-6 mt-8 rounded-xl shadow-md">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold">Sales Metrics & Funnel</h3>
+                        <div id="funnel-week-toggle" class="flex rounded-md border border-gray-300"></div>
+                    </div>
+                    <div id="sales-metrics-inputs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                        <!-- Content generated by JS -->
+                    </div>
+                </div>
+
+                <h3 class="section-title mt-8">ROOT CAUSES</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="analysis-box"><h4>Behavior</h4><textarea id="obs-behavior" placeholder="..."></textarea></div>
+                    <div class="analysis-box"><h4>Attitude</h4><textarea id="obs-attitude" placeholder="..."></textarea></div>
+                    <div class="analysis-box"><h4>Product/Service</h4><textarea id="obs-product" placeholder="..."></textarea></div>
+                    <div class="analysis-box"><h4>Systems</h4><textarea id="obs-systems" placeholder="..."></textarea></div>
+                    <div class="analysis-box"><h4>Customer</h4><textarea id="obs-customer" placeholder="..."></textarea></div>
+                </div>
+            </div>
+
+            <div id="plan-content" class="tab-content hidden space-y-8">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-2xl font-bold mb-6">AI-Generated Action Plan</h3>
+                    <div id="action-plan-content"><p class="text-gray-600">Generate an AI analysis first.</p></div>
+                </div>
+                <h3 class="section-title">BUSINESS PLANNING</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="analysis-box"><h4>Solutions/Goals</h4><textarea id="plan-solutions" placeholder="..."></textarea></div>
+                    <div class="analysis-box"><h4>Behavioral Action Plan</h4><textarea id="plan-behavior" placeholder="..."></textarea></div>
+                    <div class="analysis-box"><h4>Success Tracking</h4><textarea id="plan-success-tracking" placeholder="..."></textarea></div>
+                </div>
+            </div>
+            
+             <div id="sales-process-content" class="tab-content hidden space-y-8">
+                <div class="flex flex-wrap justify-between items-center">
+                    <h2 class="text-3xl font-bold" style="color: var(--coach-nic-dark-blue);">P.R.O.F.I.T. Selling System</h2>
+                    <div class="flex items-center space-x-4">
+                        <label for="sales-process-person" class="font-semibold">Person Assigned:</label>
+                        <input type="text" id="sales-process-person" class="w-48">
+                    </div>
+                </div>
+                <div id="sales-process-tally" class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center font-bold text-lg text-blue-800"></div>
+                <div id="sales-process-checklist" class="overflow-x-auto bg-white p-4 rounded-lg shadow-md"></div>
+            </div>
+
+            <div id="management-rhythm-content" class="tab-content hidden space-y-8">
+                <div class="flex flex-wrap justify-between items-center">
+                    <h2 class="text-3xl font-bold" style="color: var(--coach-nic-dark-blue);">Management Rhythm</h2>
+                    <div class="flex items-center space-x-4">
+                        <label for="management-rhythm-person" class="font-semibold">Person Assigned:</label>
+                        <input type="text" id="management-rhythm-person" class="w-48">
+                    </div>
+                </div>
+                <div id="management-rhythm-tally" class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center font-bold text-lg text-blue-800"></div>
+                <div id="management-rhythm-checklist" class="overflow-x-auto bg-white p-4 rounded-lg shadow-md"></div>
+            </div>
+
+            <div id="order-system-content" class="tab-content hidden space-y-8">
+                <div class="flex flex-wrap justify-between items-center">
+                    <h2 class="text-3xl font-bold" style="color: var(--coach-nic-dark-blue);">Order Taking/Delivery System</h2>
+                    <div class="flex items-center space-x-4">
+                        <label for="order-system-person" class="font-semibold">Person Assigned:</label>
+                        <input type="text" id="order-system-person" class="w-48">
+                    </div>
+                </div>
+                <div id="order-system-tally" class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center font-bold text-lg text-blue-800"></div>
+                <div id="order-system-checklist" class="overflow-x-auto bg-white p-4 rounded-lg shadow-md"></div>
+            </div>
+
+            <div id="merchandising-content" class="tab-content hidden space-y-8">
+                <div class="flex flex-wrap justify-between items-center">
+                    <h2 class="text-3xl font-bold" style="color: var(--coach-nic-dark-blue);">Merchandising</h2>
+                    <div class="flex items-center space-x-4">
+                        <label for="merchandising-person" class="font-semibold">Person Assigned:</label>
+                        <input type="text" id="merchandising-person" class="w-48">
+                    </div>
+                </div>
+                 <div id="merchandising-tally" class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center font-bold text-lg text-blue-800"></div>
+                <div id="merchandising-checklist" class="overflow-x-auto bg-white p-4 rounded-lg shadow-md"></div>
+            </div>
+
+            <!-- UPDATED: Team Management Tab -->
+            <div id="business-units-content" class="tab-content hidden space-y-8">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-2xl font-bold mb-6">Team & Multi-Location Management</h3>
+                    <div class="mb-4 flex flex-wrap gap-2">
+                        <button id="add-team-member-btn" class="primary-btn">👥 Add Team Member</button>
+                        <button id="add-location-btn" class="primary-btn hidden">📍 Add Location</button>
+                        <button id="role-permissions-btn" class="secondary-btn">⚙️ Role Permissions</button>
+                    </div>
+                    <div id="team-members-list" class="mb-6"></div>
+                    <div id="locations-list" class="mb-6"></div>
+                    <div><button onclick="addBusinessUnit()" class="secondary-btn">+ Add Business Unit</button></div>
+                    <div id="business-units-list" class="mt-4"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- NEW: Team Management Modal -->
+    <div id="team-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full max-h-96 overflow-y-auto">
+                <h3 class="text-xl font-bold mb-4" style="color: var(--coach-nic-dark-blue);">👥 Team Members</h3>
+                <div id="team-members-content" class="space-y-4"></div>
+                <div class="mt-6 flex justify-end space-x-2">
+                    <button onclick="closeTeamModal()" class="secondary-btn">Close</button>
+                    <button onclick="addTeamMemberPrompt()" class="primary-btn">+ Add Member</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Industry Benchmarks Modal -->
+    <div id="benchmarks-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg p-6 max-w-lg w-full max-h-96 overflow-y-auto">
+                <h3 class="text-xl font-bold mb-4" style="color: var(--coach-nic-dark-blue);">📊 Industry Benchmarks</h3>
+                <div id="benchmarks-content" class="space-y-4"></div>
+                <div class="mt-6 flex justify-end">
+                    <button onclick="closeBenchmarksModal()" class="secondary-btn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let currentUser = null;
+    let businessUnits = [];
+    let charts = {};
+    let currentFunnelWeek = 5;
+    let teamMembers = [];
+    let selectedIndustryTemplate = null;
+
+    // NEW: Industry-specific templates for different business types
+    const industryTemplates = {
+        consulting: {
+            name: 'Professional Consulting',
+            driverNames: ['Strategy Consulting', 'Implementation Services', 'Training Programs', 'Retainer Clients'],
+            driverPercents: [40, 30, 20, 10],
+            benchmarks: { avgMonthlyGoal: 75000, avgASP: 2500, avgUPT: 1.2 }
+        },
+        restaurant: {
+            name: 'Restaurant/Food Service',
+            driverNames: ['Dine-In Sales', 'Takeout/Delivery', 'Catering', 'Retail/Merchandise'],
+            driverPercents: [60, 25, 12, 3],
+            benchmarks: { avgMonthlyGoal: 45000, avgASP: 35, avgUPT: 2.8 }
+        },
+        retail: {
+            name: 'Retail Store',
+            driverNames: ['In-Store Sales', 'Online Sales', 'B2B Wholesale', 'Services'],
+            driverPercents: [50, 30, 15, 5],
+            benchmarks: { avgMonthlyGoal: 85000, avgASP: 125, avgUPT: 2.2 }
+        },
+        fitness: {
+            name: 'Fitness/Wellness',
+            driverNames: ['Memberships', 'Personal Training', 'Classes', 'Retail/Supplements'],
+            driverPercents: [55, 25, 15, 5],
+            benchmarks: { avgMonthlyGoal: 65000, avgASP: 95, avgUPT: 1.5 }
+        },
+        coaching: {
+            name: 'Business Coaching',
+            driverNames: ['1-on-1 Coaching', 'Group Programs', 'Speaking Events', 'Online Courses'],
+            driverPercents: [45, 30, 15, 10],
+            benchmarks: { avgMonthlyGoal: 95000, avgASP: 3500, avgUPT: 1.1 }
+        },
+        franchise: {
+            name: 'Multi-Location Franchise',
+            driverNames: ['Location A Revenue', 'Location B Revenue', 'Location C Revenue', 'Corporate Services'],
+            driverPercents: [35, 35, 25, 5],
+            benchmarks: { avgMonthlyGoal: 180000, avgASP: 85, avgUPT: 2.0 }
+        }
+    };
+
+    // NEW: User roles and permissions system
+    const userRoles = {
+        owner: { name: 'Business Owner', permissions: ['view_all', 'edit_all', 'manage_users', 'export_reports'] },
+        manager: { name: 'Manager', permissions: ['view_all', 'edit_team', 'export_reports'] },
+        employee: { name: 'Team Member', permissions: ['view_own', 'edit_own'] },
+        coach: { name: 'Business Coach', permissions: ['view_clients', 'edit_clients', 'export_reports', 'manage_clients'] },
+        franchise_admin: { name: 'Franchise Admin', permissions: ['view_all_locations', 'edit_all_locations', 'export_reports', 'manage_locations'] }
+    };
+
+    // UPDATED: Demo accounts with team and industry data
+    const demoAccounts = {
+        client: {
+            email: 'client@demo.com', name: 'Sarah Johnson', company: 'Johnson Consulting LLC', plan: 'client_pro', role: 'owner',
+            industry: 'consulting', teamMembers: [
+                { name: 'Sarah Johnson', role: 'owner', email: 'sarah@johnson-consulting.com', active: true },
+                { name: 'Mike Davis', role: 'manager', email: 'mike@johnson-consulting.com', active: true },
+                { name: 'Lisa Chen', role: 'employee', email: 'lisa@johnson-consulting.com', active: true }
+            ],
+            data: {
+                month: 'September', year: 2025, monthlyRevenueGoal: 45000,
+                driverNames: ['Consulting', 'Workshops', 'Retainer Clients', 'Online Courses'],
+                weeklyGoalPcts: [25, 25, 25, 25, 0],
+                driverData: [ { percent: 45, weeklyActuals: [10000, 11000, 8000, 9000, 0] }, { percent: 25, weeklyActuals: [4000, 4000, 5000, 6000, 0] }, { percent: 20, weeklyActuals: [3000, 3000, 4000, 4000, 0] }, { percent: 10, weeklyActuals: [1000, 1000, 2000, 2000, 0] } ],
+                salesMetrics: {
+                    actuals: [ { asp: 450, upt: 1.5, transactions: 30 }, { asp: 480, upt: 1.6, transactions: 32 }, { asp: 420, upt: 1.4, transactions: 34 }, { asp: 460, upt: 1.5, transactions: 35 }, { asp: 0, upt: 0, transactions: 0 } ],
+                    goal: [ { asp: 500, upt: 2, transactions: 35 }, { asp: 500, upt: 2, transactions: 35 }, { asp: 450, upt: 1.5, transactions: 35 }, { asp: 480, upt: 1.6, transactions: 38 }, { asp: 0, upt: 0, transactions: 0 } ]
+                },
+                salesFunnel: [
+                    { leads: 100, prospects: 40, sales: 10, pc: 1500 }, { leads: 110, prospects: 45, sales: 11, pc: 1500 },
+                    { leads: 120, prospects: 50, sales: 12, pc: 1500 }, { leads: 130, prospects: 55, sales: 14, pc: 1500 }, { leads: 0, prospects: 0, sales: 0, pc: 0 }
+                ]
+            }
+        },
+        coach: {
+            email: 'coach@demo.com', name: 'Michael Rodriguez', company: 'Elite Performance Coaching', plan: 'coach_professional', role: 'coach',
+            industry: 'coaching', teamMembers: [
+                { name: 'Michael Rodriguez', role: 'coach', email: 'michael@elitecoaching.com', active: true },
+                { name: 'Jennifer Walsh', role: 'manager', email: 'jen@elitecoaching.com', active: true }
+            ],
+            clients: [
+                { name: 'ABC Manufacturing', industry: 'manufacturing', monthlyGoal: 125000 },
+                { name: 'TechStart Solutions', industry: 'consulting', monthlyGoal: 75000 },
+                { name: 'Green Valley Restaurant', industry: 'restaurant', monthlyGoal: 35000 }
+            ],
+            data: {
+                month: 'September', year: 2025, monthlyRevenueGoal: 85000,
+                driverNames: ['Executive Coaching', 'Group Programs', 'Masterminds', 'Speaking'],
+                weeklyGoalPcts: [20, 25, 30, 25, 0],
+                driverData: [ { percent: 40, weeklyActuals: [6120, 7480, 8500, 11900, 0] }, { percent: 25, weeklyActuals: [3825, 4675, 5312, 7437, 0] }, { percent: 20, weeklyActuals: [3060, 3740, 4250, 5950, 0] }, { percent: 10, weeklyActuals: [1530, 1870, 2125, 2975, 0] } ],
+                salesMetrics: { actuals: Array(5).fill({ asp: 0, upt: 0, transactions: 0 }), goal: Array(5).fill({ asp: 0, upt: 0, transactions: 0 }) },
+                salesFunnel: Array(5).fill({ leads: 0, prospects: 0, sales: 0, pc: 0 })
+            }
+        },
+        franchise: {
+            email: 'franchise@demo.com', name: 'David Chen', company: 'FastFit Franchise Corp', plan: 'franchise_scale', role: 'franchise_admin',
+            industry: 'fitness', teamMembers: [
+                { name: 'David Chen', role: 'franchise_admin', email: 'david@fastfit.com', active: true },
+                { name: 'Sarah Kim', role: 'manager', email: 'sarah@fastfit-downtown.com', active: true, location: 'Downtown' },
+                { name: 'Carlos Rivera', role: 'manager', email: 'carlos@fastfit-westside.com', active: true, location: 'Westside' },
+                { name: 'Maya Patel', role: 'manager', email: 'maya@fastfit-north.com', active: true, location: 'North' }
+            ],
+            locations: [
+                { name: 'Downtown Location', manager: 'Sarah Kim', monthlyGoal: 65000, address: '123 Main St' },
+                { name: 'Westside Location', manager: 'Carlos Rivera', monthlyGoal: 55000, address: '456 West Ave' },
+                { name: 'North Location', manager: 'Maya Patel', monthlyGoal: 60000, address: '789 North Blvd' }
+            ],
+            data: {
+                month: 'September', year: 2025, monthlyRevenueGoal: 180000,
+                driverNames: ['Membership', 'Training', 'Classes', 'Retail'],
+                weeklyGoalPcts: [22, 22, 23, 23, 10],
+                driverData: [ { percent: 55, weeklyActuals: [17820, 21780, 24750, 34650, 5000] }, { percent: 25, weeklyActuals: [8100, 9900, 11250, 15750, 2000] }, { percent: 12, weeklyActuals: [3888, 4752, 5400, 7560, 1000] }, { percent: 5, weeklyActuals: [1620, 1980, 2250, 3150, 0] } ],
+                salesMetrics: { actuals: Array(5).fill({ asp: 0, upt: 0, transactions: 0 }), goal: Array(5).fill({ asp: 0, upt: 0, transactions: 0 }) },
+                salesFunnel: Array(5).fill({ leads: 0, prospects: 0, sales: 0, pc: 0 })
+            }
+        }
+    };
+    
+    function formatCurrency(v, forceSign=false){const f=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.abs(v));const s=v<0?'-':(forceSign?'+':'');return s+f}
+    function formatPercent(v){return isNaN(v)?'0.0%':v.toFixed(1)+'%'}
+    function showNotification(m){const n=document.getElementById('notification');n.textContent=m;n.classList.add('show');setTimeout(()=>{n.classList.remove('show')},3e3)}
+
+    // NEW: Load industry template function
+    function loadIndustryTemplate(templateKey) {
+        const template = industryTemplates[templateKey];
+        if (!template) {
+            showNotification("Industry template not found.");
+            return;
+        }
+
+        // Create a new user based on the template
+        currentUser = {
+            email: 'template@demo.com',
+            name: 'Template User',
+            company: `${template.name} Business`,
+            plan: 'template_demo',
+            role: 'owner',
+            industry: templateKey,
+            teamMembers: [
+                { name: 'Template User', role: 'owner', email: 'template@demo.com', active: true }
+            ],
+            data: {
+                month: 'September',
+                year: 2025,
+                monthlyRevenueGoal: template.benchmarks.avgMonthlyGoal,
+                driverNames: template.driverNames,
+                weeklyGoalPcts: [25, 25, 25, 25, 0],
+                driverData: template.driverNames.map((name, i) => ({
+                    percent: template.driverPercents[i],
+                    weeklyActuals: [0, 0, 0, 0, 0]
+                })),
+                salesMetrics: {
+                    actuals: Array(5).fill().map(() => ({ asp: 0, upt: 0, transactions: 0 })),
+                    goal: Array(5).fill().map(() => ({ 
+                        asp: template.benchmarks.avgASP, 
+                        upt: template.benchmarks.avgUPT, 
+                        transactions: 0 
+                    }))
+                },
+                salesFunnel: Array(5).fill().map(() => ({ leads: 0, prospects: 0, sales: 0, pc: 0 }))
+            }
+        };
+
+        showApp();
+        populateData(currentUser.data);
+        performDataValidationAndAutoCalculation();
+        showNotification(`🎯 ${template.name} template loaded! Ready to customize.`);
+    }
+
+    // Enhanced demo loading with data persistence and new features
+    function loadDemo(type) {
+        const demo = demoAccounts[type];
+        if (!demo || !demo.data) { 
+            return showNotification("Error: Demo data missing."); 
+        }
+        
+        // First check for saved data
+        const savedUser = loadSavedData(demo.email);
+        if (savedUser) {
+            currentUser = savedUser;
+            showNotification(`Welcome back, ${savedUser.name}!`);
+        } else {
+            currentUser = JSON.parse(JSON.stringify(demo));
+            showNotification(`Demo Mode: ${demo.company}`);
+        }
+        
+        showApp();
+        populateData(currentUser.data);
+        enableAutoSave();
+        
+        // Auto-calculate missing data
+        performDataValidationAndAutoCalculation();
+    }
+
+    // UPDATED: Enhanced showApp function with new features
+    function showApp() {
+        document.getElementById('landing-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.remove('hidden');
+        
+        // Enhanced user display with role and industry info
+        const userDisplay = document.getElementById('user-display');
+        userDisplay.textContent = `${currentUser.name} (${currentUser.company})`;
+        
+        // Show industry if available
+        if (currentUser.industry) {
+            const industryDisplay = document.getElementById('industry-display');
+            const template = industryTemplates[currentUser.industry];
+            if (template) {
+                industryDisplay.textContent = template.name;
+                industryDisplay.classList.remove('hidden');
+            }
+        }
+        
+        // Show role-based features
+        if (currentUser.role && userRoles[currentUser.role]) {
+            const permissions = userRoles[currentUser.role].permissions;
+            
+            // Show team management for appropriate roles
+            if (permissions.includes('manage_users') || permissions.includes('manage_clients') || permissions.includes('manage_locations')) {
+                document.getElementById('team-members-btn').classList.remove('hidden');
+            }
+            
+            // Show location management for franchise admins
+            if (currentUser.role === 'franchise_admin' && currentUser.locations) {
+                document.getElementById('add-location-btn').classList.remove('hidden');
+                populateLocationsManagement();
+            }
+        }
+        
+        const sub = document.getElementById('subscription-status');
+        sub.textContent = currentUser.plan.replace('_',' ');
+        sub.className = `subscription-badge ${currentUser.plan}`;
+        addCSVImportButton();
+    }
+
+    // NEW: Team member management functions
+    function showTeamModal() {
+        if (!currentUser || !currentUser.teamMembers) return;
+        
+        const modal = document.getElementById('team-modal');
+        const content = document.getElementById('team-members-content');
+        
+        content.innerHTML = currentUser.teamMembers.map((member, index) => `
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded team-member-card">
+                <div>
+                    <div class="font-medium">${member.name}</div>
+                    <div class="text-sm text-gray-600">${userRoles[member.role].name}</div>
+                    <div class="text-xs text-gray-500">${member.email}</div>
+                    ${member.location ? `<div class="text-xs text-blue-600">📍 ${member.location}</div>` : ''}
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="${member.active ? 'text-green-600' : 'text-red-600'} text-sm">
+                        ${member.active ? '✅ Active' : '❌ Inactive'}
+                    </span>
+                    <button onclick="toggleTeamMemberStatus(${index})" class="text-xs ${member.active ? 'text-red-600' : 'text-green-600'} hover:underline">
+                        ${member.active ? 'Deactivate' : 'Activate'}
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        modal.classList.remove('hidden');
+    }
+
+    function closeTeamModal() {
+        document.getElementById('team-modal').classList.add('hidden');
+    }
+
+    function addTeamMemberPrompt() {
+        const name = prompt("Team member name:");
+        if (!name) return;
+        
+        const email = prompt("Email address:");
+        if (!email) return;
+        
+        const roles = Object.keys(userRoles);
+        const rolePrompt = `Select role number:\n${roles.map((role, i) => `${i + 1}. ${userRoles[role].name}`).join('\n')}`;
+        const roleIndex = parseInt(prompt(rolePrompt)) - 1;
+        
+        if (roleIndex < 0 || roleIndex >= roles.length) {
+            showNotification("Invalid role selected.");
+            return;
+        }
+        
+        currentUser.teamMembers.push({
+            name: name,
+            role: roles[roleIndex],
+            email: email,
+            active: true
+        });
+        
+        showTeamModal(); // Refresh the modal
+        showNotification(`✅ ${name} added to team successfully!`);
+    }
+
+    function toggleTeamMemberStatus(index) {
+        if (currentUser.teamMembers[index]) {
+            currentUser.teamMembers[index].active = !currentUser.teamMembers[index].active;
+            showTeamModal(); // Refresh the modal
+        }
+    }
+
+    // NEW: Industry benchmarks functions
+    function showBenchmarksModal() {
+        if (!currentUser || !currentUser.industry) {
+            showNotification("No industry data available.");
+            return;
+        }
+        
+        const template = industryTemplates[currentUser.industry];
+        const modal = document.getElementById('benchmarks-modal');
+        const content = document.getElementById('benchmarks-content');
+        
+        const data = currentUser.data;
+        const totalActual = data.driverData.reduce((sum, d) => sum + d.weeklyActuals.reduce((s, v) => s + v, 0), 0);
+        const progressPercent = data.monthlyRevenueGoal > 0 ? (totalActual / data.monthlyRevenueGoal) * 100 : 0;
+        
+        content.innerHTML = `
+            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                <h4 class="font-bold text-blue-800 mb-2">🏢 Industry: ${template.name}</h4>
+                <p class="text-sm text-blue-600">Benchmarks based on similar businesses in your industry</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50 p-3 rounded">
+                    <div class="text-sm text-gray-600">Your Monthly Goal</div>
+                    <div class="font-bold text-lg">${formatCurrency(data.monthlyRevenueGoal)}</div>
+                </div>
+                <div class="bg-gray-50 p-3 rounded">
+                    <div class="text-sm text-gray-600">Industry Average</div>
+                    <div class="font-bold text-lg">${formatCurrency(template.benchmarks.avgMonthlyGoal)}</div>
+                </div>
+                
+                <div class="bg-gray-50 p-3 rounded">
+                    <div class="text-sm text-gray-600">Your Progress</div>
+                    <div class="font-bold text-lg ${progressPercent >= 100 ? 'text-green-600' : progressPercent >= 80 ? 'text-yellow-600' : 'text-red-600'}">${progressPercent.toFixed(1)}%</div>
+                </div>
+                <div class="bg-gray-50 p-3 rounded">
+                    <div class="text-sm text-gray-600">Industry Benchmark ASP</div>
+                    <div class="font-bold text-lg">${formatCurrency(template.benchmarks.avgASP)}</div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h5 class="font-semibold mb-2">📊 Revenue Driver Distribution:</h5>
+                <div class="space-y-2">
+                    ${template.driverNames.map((name, i) => `
+                        <div class="flex justify-between text-sm">
+                            <span>${name}</span>
+                            <span class="font-medium">${template.driverPercents[i]}%</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
+                <div class="text-sm text-yellow-800">
+                    <strong>💡 Industry Insight:</strong> 
+                    ${getIndustryInsight(currentUser.industry, progressPercent)}
+                </div>
+            </div>
+        `;
+        
+        modal.classList.remove('hidden');
+    }
+
+    function closeBenchmarksModal() {
+        document.getElementById('benchmarks-modal').classList.add('hidden');
+    }
+
+    function getIndustryInsight(industry, progress) {
+        const insights = {
+            consulting: progress >= 90 ? "Strong performance! Focus on scaling successful service offerings." : 
+                       progress >= 70 ? "Good progress. Consider increasing retainer client percentage." : 
+                       "Focus on building recurring revenue through retainer agreements.",
+            restaurant: progress >= 90 ? "Excellent! Consider expanding delivery/catering services." :
+                       progress >= 70 ? "Solid performance. Optimize table turnover and average order value." :
+                       "Focus on increasing average order size and customer frequency.",
+            retail: progress >= 90 ? "Outstanding! Explore online sales expansion opportunities." :
+                   progress >= 70 ? "Good momentum. Focus on inventory turnover and customer retention." :
+                   "Prioritize high-margin products and improve conversion rates.",
+            fitness: progress >= 90 ? "Excellent retention! Consider premium service add-ons." :
+                    progress >= 70 ? "Healthy membership base. Focus on personal training upsells." :
+                    "Improve member retention and increase class participation rates.",
+            coaching: progress >= 90 ? "Strong client outcomes! Expand group program offerings." :
+                     progress >= 70 ? "Good client engagement. Scale with group coaching models." :
+                     "Focus on client results and referral generation programs.",
+            franchise: progress >= 90 ? "Multi-location success! Consider additional territory expansion." :
+                      progress >= 70 ? "Solid franchise performance. Optimize underperforming locations." :
+                      "Focus on standardizing processes across all locations."
+        };
+        
+        return insights[industry] || "Focus on your core revenue drivers for improved performance.";
+    }
+    
+    function populateData(data) {
+        document.getElementById('month-of').value = data.month;
+        document.getElementById('year').value = data.year;
+        document.getElementById('monthly-revenue-goal').value = data.monthlyRevenueGoal;
+        document.getElementById('revenue-drivers').value = data.driverNames.join(', ');
+        data.weeklyGoalPcts.forEach((p, i) => { const el = document.getElementById(`week${i + 1}-goal-percent`); if(el) el.value = p; });
+        if (!data.salesProcess) initializeChecklistData(data);
+        updateAllData(data);
+    }
+    
+    function updateAllData(data) {
+        updateWeeklyTable(data);
+        updateRevenueDriversTable(data);
+        updateAnalysisPanels(data);
+        updateSalesMetricsClues(data);
+        updateSalesFunnelView();
+        updateCharts(data);
+        updateSalesProcessChecklist(data.salesProcess);
+        updateManagementRhythmChecklist(data.managementRhythm);
+        updateOrderSystemChecklist(data.orderSystem);
+        updateMerchandisingChecklist(data.merchandising);
+    }
+
+    function updateWeeklyTable(data) {
+        const tbody = document.getElementById('weekly-performance-tbody');
+        tbody.innerHTML = '';
+        let totalActual = 0, totalGoalSoFar = 0, totalActualSoFar = 0;
+        data.weeklyGoalPcts.forEach((pct, i) => {
+            const actual = data.driverData.reduce((sum, driver) => sum + (driver.weeklyActuals[i] || 0), 0);
+            if (pct === 0 && actual === 0) return;
+            const weekGoal = (data.monthlyRevenueGoal * pct) / 100;
+            const rolloverGap = Math.max(0, totalGoalSoFar - totalActualSoFar);
+            const revisedGoal = weekGoal + rolloverGap;
+            const status = actual - revisedGoal;
+            totalActual += actual;
+            totalGoalSoFar += weekGoal;
+            totalActualSoFar += actual;
+            const row = tbody.insertRow();
+            row.innerHTML = `<td class="p-2">Week ${i + 1}</td><td class="p-2 text-right">${formatCurrency(weekGoal)}</td><td class="p-2 text-right">${formatCurrency(rolloverGap)}</td><td class="p-2 text-right">${formatCurrency(revisedGoal)}</td><td class="p-2 text-right">${formatCurrency(actual)}</td><td class="p-2 text-right ${status >= 0 ? 'positive' : 'negative'}">${formatCurrency(status)}</td>`;
+        });
+        document.getElementById('weekly-total-base-goal').textContent = formatCurrency(totalGoalSoFar);
+        document.getElementById('weekly-total-actual').textContent = formatCurrency(totalActual);
+        const totalStatusEl = document.getElementById('weekly-total-status');
+        totalStatusEl.textContent = formatCurrency(totalActual - totalGoalSoFar);
+        totalStatusEl.className = `p-2 text-right font-bold ${totalActual - totalGoalSoFar >= 0 ? 'positive' : 'negative'}`;
+    }
+
+    function updateRevenueDriversTable(data) {
+        const tbody = document.getElementById('revenue-drivers-tbody');
+        tbody.innerHTML = '';
+        const totalRevenueActual = data.driverData.reduce((sum, d) => sum + d.weeklyActuals.reduce((s, v) => s + v, 0), 0);
+        let totalPercentGoal = 0, totalMonthlyGoal = 0, totalMtdActual = 0;
+        data.driverNames.forEach((name, i) => {
+            if (!name.trim()) return;
+            const driver = data.driverData[i];
+            const monthlyGoal = (data.monthlyRevenueGoal * driver.percent) / 100;
+            const mtdActual = driver.weeklyActuals.reduce((sum, val) => sum + val, 0);
+            const actualPercent = totalRevenueActual > 0 ? (mtdActual / totalRevenueActual) * 100 : 0;
+            const status = mtdActual - monthlyGoal;
+            totalPercentGoal += driver.percent;
+            totalMonthlyGoal += monthlyGoal;
+            totalMtdActual += mtdActual;
+            const row = tbody.insertRow();
+            let cellHTML = `<td class="p-2">${name}</td><td class="p-2 text-right"><input type="number" value="${driver.percent}" data-input-type="driverPercent" data-driver-index="${i}" class="w-16 text-right"></td><td class="p-2 text-right">${formatPercent(actualPercent)}</td><td class="p-2 text-right">${formatCurrency(monthlyGoal)}</td>`;
+            for (let weekIdx = 0; weekIdx < 5; weekIdx++) {
+                const weeklyGoal = (monthlyGoal * data.weeklyGoalPcts[weekIdx]) / 100;
+                cellHTML += `<td class="p-1 text-right text-xs">${formatCurrency(weeklyGoal)}</td><td class="p-1 text-right text-xs"><input type="number" value="${driver.weeklyActuals[weekIdx] || 0}" data-input-type="driverActual" data-driver-index="${i}" data-week-index="${weekIdx}"></td>`;
+            }
+            cellHTML += `<td class="p-2 text-right">${formatCurrency(mtdActual)}</td><td class="p-2 text-right ${status >= 0 ? 'positive' : 'negative'}">${formatCurrency(status)}</td>`;
+            row.innerHTML = cellHTML;
+        });
+        document.getElementById('driver-total-percent-goal').textContent = totalPercentGoal + '%';
+        document.getElementById('driver-total-monthly-goal').textContent = formatCurrency(totalMonthlyGoal);
+        document.getElementById('driver-total-mtd-actual').textContent = formatCurrency(totalMtdActual);
+        const totalStatusEl = document.getElementById('driver-total-status');
+        totalStatusEl.textContent = formatCurrency(totalMtdActual - totalMonthlyGoal);
+        totalStatusEl.className = `p-2 text-right ${totalMtdActual - totalMonthlyGoal >= 0 ? 'positive' : 'negative'}`;
+    }
+
+    function updateCharts(data) {
+        updateWeeklyChart(data); updateDriverChart(data); updateProgressChart(data); updateTrendsChart(data);
+    }
+    function updateWeeklyChart(data) {
+        const ctx = document.getElementById('weeklyChart')?.getContext('2d');
+        if (!ctx) return; if (charts.weekly) charts.weekly.destroy(); const weeks = [], goals = [], actuals = [];
+        data.weeklyGoalPcts.forEach((pct, i) => {
+            const actualVal = data.driverData.reduce((sum, driver) => sum + (driver.weeklyActuals[i] || 0), 0);
+            if (pct > 0 || actualVal > 0) { weeks.push(`Week ${i + 1}`); goals.push((data.monthlyRevenueGoal * pct) / 100); actuals.push(actualVal); }
+        });
+        charts.weekly = new Chart(ctx, { type: 'bar', data: { labels: weeks, datasets: [{ label: 'Goal', data: goals, backgroundColor: 'rgba(107, 153, 197, 0.7)' }, { label: 'Actual', data: actuals, backgroundColor: 'rgba(0, 45, 98, 0.7)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Weekly Performance: Goal vs Actual' } }, scales: { y: { beginAtZero: true, ticks: { callback: (v) => formatCurrency(v) } } } } });
+    }
+    function updateDriverChart(data) {
+        const ctx = document.getElementById('driverChart')?.getContext('2d');
+        if (!ctx) return; if (charts.driver) charts.driver.destroy(); const labels = data.driverNames.filter(name => name.trim());
+        const percentages = data.driverData.slice(0, labels.length).map(d => d.percent);
+        charts.driver = new Chart(ctx, { type: 'doughnut', data: { labels: labels, datasets: [{ data: percentages, backgroundColor: ['#002D62', '#6B99C5', '#EBD8B2', '#a9a9a9', '#696969'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Revenue Driver Distribution' }, legend: { position: 'bottom' } } } });
+    }
+    function updateProgressChart(data) {
+        const ctx = document.getElementById('progressChart')?.getContext('2d');
+        if (!ctx) return; if (charts.progress) charts.progress.destroy();
+        const totalActual = data.driverData.reduce((sum, d) => sum + d.weeklyActuals.reduce((s, v) => s + v, 0), 0);
+        const totalGoal = data.monthlyRevenueGoal; const progressPercent = totalGoal > 0 ? (totalActual / totalGoal) * 100 : 0;
+        charts.progress = new Chart(ctx, { type: 'doughnut', data: { labels: ['Achieved', 'Remaining'], datasets: [{ data: [progressPercent, 100 - progressPercent], backgroundColor: [progressPercent >= 100 ? '#22c55e' : '#6B99C5', '#e5e7eb'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { title: { display: true, text: 'Monthly Goal Progress' }, legend: { display: false } } }, plugins: [{ beforeDraw: function(chart) { const {width, height, ctx} = chart; ctx.restore(); const fontSize = (height / 114).toFixed(2); ctx.font = `bold ${fontSize}em sans-serif`; ctx.textBaseline = "middle"; const text = progressPercent.toFixed(1) + "%"; const textX = Math.round((width - ctx.measureText(text).width) / 2); const textY = height / 2; ctx.fillText(text, textX, textY); ctx.save(); }}] });
+    }
+    function updateTrendsChart(data) {
+        const ctx = document.getElementById('trendsChart')?.getContext('2d');
+        if (!ctx) return; if (charts.trends) charts.trends.destroy(); const weeks = [], cumulativeActual = [], cumulativeGoal = [];
+        let actualSum = 0, goalSum = 0;
+        data.weeklyGoalPcts.forEach((pct, i) => {
+            const actualVal = data.driverData.reduce((sum, driver) => sum + (driver.weeklyActuals[i] || 0), 0);
+            if (pct > 0 || actualVal > 0) { weeks.push(`Week ${i + 1}`); actualSum += actualVal; goalSum += (data.monthlyRevenueGoal * pct) / 100; cumulativeActual.push(actualSum); cumulativeGoal.push(goalSum); }
+        });
+        charts.trends = new Chart(ctx, { type: 'line', data: { labels: weeks, datasets: [{ label: 'Cumulative Goal', data: cumulativeGoal, borderColor: 'rgba(107, 153, 197, 1)', tension: 0.4 }, { label: 'Cumulative Actual', data: cumulativeActual, borderColor: 'rgba(0, 45, 98, 1)', tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Cumulative Performance Trend' } }, scales: { y: { beginAtZero: true, ticks: { callback: (v) => formatCurrency(v) } } } } });
+    }
+
+    function updateAnalysisPanels(data) {
+        const container = document.getElementById('analysis-grid-container');
+        const problemGapsHTML = buildProblemGapsPanel(data);
+        const whatIfCalculatorHTML = buildWhatIfCalculatorPanel(data);
+        container.innerHTML = problemGapsHTML + whatIfCalculatorHTML;
+    }
+
+    function buildProblemGapsPanel(data) {
+        const activeDrivers = data.driverNames.map((name, index) => ({ name, index })).filter(d => d.name.trim() !== '');
+        const driverTotals = Array(activeDrivers.length).fill(0);
+        let tableHeaderHTML = `<th class="p-2 text-left font-semibold">Plan</th><th class="p-2 text-right font-semibold">MTD Variance</th>`;
+        activeDrivers.forEach(driver => { tableHeaderHTML += `<th class="p-2 text-right font-semibold text-sm">${driver.name}</th>`; });
+        let tableBodyHTML = '';
+        let totalGoalSoFar = 0, totalActualSoFar = 0;
+        for (let i = 0; i < 5; i++) {
+            let weeklyRowHTML = '';
+            activeDrivers.forEach((driver, driverIdx) => {
+                const driverData = data.driverData[driver.index];
+                if (!driverData) return;
+                const driverGoal = data.monthlyRevenueGoal * (driverData.percent / 100) * (data.weeklyGoalPcts[i] / 100);
+                const driverActual = driverData.weeklyActuals[i] || 0;
+                const driverVariance = driverActual - driverGoal;
+                driverTotals[driverIdx] += driverVariance;
+                weeklyRowHTML += `<td class="p-2 text-right ${driverVariance >= 0 ? 'text-gray-700' : 'negative'}">${formatCurrency(driverVariance)}</td>`;
+            });
+            const weeklyActual = data.driverData.reduce((sum, d) => sum + (d.weeklyActuals[i] || 0), 0);
+            const weeklyGoal = data.monthlyRevenueGoal * (data.weeklyGoalPcts[i] / 100);
+            totalGoalSoFar += weeklyGoal;
+            totalActualSoFar += weeklyActual;
+            const cumulativeGap = totalActualSoFar - totalGoalSoFar;
+            tableBodyHTML += `<tr><td class="p-2 font-medium">Week ${i + 1}</td><td class="p-2 text-right ${cumulativeGap >= 0 ? 'positive' : 'negative'}">${formatCurrency(cumulativeGap)}</td>${weeklyRowHTML}</tr>`;
+        }
+        let footerRowHTML = `<tr class="font-bold border-t-2"><td class="p-2">END RESULT</td><td class="p-2 text-right ${totalActualSoFar - totalGoalSoFar >= 0 ? 'positive' : 'negative'}">${formatCurrency(totalActualSoFar - totalGoalSoFar)}</td>`;
+        driverTotals.forEach(total => { footerRowHTML += `<td class="p-2 text-right ${total >= 0 ? 'text-gray-700' : 'negative'}">${formatCurrency(total)}</td>`; });
+        footerRowHTML += `</tr>`;
+        return `<div class="p-4 border rounded-lg overflow-x-auto"><div class="text-white font-bold p-2 text-center rounded-t-md" style="background-color: var(--coach-nic-dark-blue);">PROBLEM: REVENUE GAPS</div><table class="w-full text-sm"><thead><tr>${tableHeaderHTML}</tr></thead><tbody>${tableBodyHTML}${footerRowHTML}</tbody></table></div>`;
+    }
+
+    function buildWhatIfCalculatorPanel(data) {
+        let calculatorHTML = `<div class="p-4 border rounded-lg"><div class="text-white font-bold p-2 text-center rounded-t-md" style="background-color: var(--coach-nic-dark-blue);">WHAT-IF CALCULATOR: Close The Gap</div><div id="what-if-calculator-interactive" class="space-y-2 mt-2">`;
+        let totalGoalSoFar = 0, totalActualSoFar = 0;
+        for(let i=0; i < 5; i++) {
+            const actual = data.driverData.reduce((sum, driver) => sum + (driver.weeklyActuals[i] || 0), 0);
+            const weekGoal = (data.monthlyRevenueGoal * data.weeklyGoalPcts[i]) / 100;
+            const rolloverGap = Math.max(0, totalGoalSoFar - totalActualSoFar);
+            const revisedGoal = weekGoal + rolloverGap;
+            const weeklyGap = Math.max(0, revisedGoal - actual);
+            totalGoalSoFar += weekGoal;
+            totalActualSoFar += actual;
+            const hasGap = weeklyGap > 0;
+            calculatorHTML += `<div class="grid grid-cols-6 gap-2 items-center p-2 rounded ${hasGap ? 'bg-gray-50' : 'bg-gray-200'}"><div class="font-bold">Week ${i+1}</div><div class="text-right negative font-medium">${formatCurrency(weeklyGap)}</div><input type="number" placeholder="New ASP" ${!hasGap ? 'disabled' : ''} class="what-if-asp text-right" data-week-index="${i}"><input type="number" placeholder="UPT" ${!hasGap ? 'disabled' : ''} class="what-if-upt text-right" data-week-index="${i}"><input type="text" value="${hasGap ? '$0' : '---'}" class="bg-gray-100 text-right font-bold" id="what-if-pc-${i}" readonly><input type="text" value="${hasGap ? '---' : 'N/A'}" class="bg-gray-100 text-center font-bold" id="what-if-req-${i}" readonly></div>`;
+        }
+        return `${calculatorHTML}</div></div><div id="what-if-success-message" class="mt-4 p-4 rounded-lg bg-green-100 text-green-800 font-medium text-center hidden"></div>`;
+    }
+
+    function calculateWhatIfRow(weekIndex) {
+        const data = currentUser.data; let totalGoalSoFar = 0, totalActualSoFar = 0;
+        for(let i=0; i < weekIndex; i++) {
+            totalGoalSoFar += (data.monthlyRevenueGoal * data.weeklyGoalPcts[i]) / 100;
+            totalActualSoFar += data.driverData.reduce((sum, driver) => sum + (driver.weeklyActuals[i] || 0), 0);
+        }
+        const rolloverGap = Math.max(0, totalGoalSoFar - totalActualSoFar);
+        const weekGoal = (data.monthlyRevenueGoal * data.weeklyGoalPcts[weekIndex]) / 100;
+        const actual = data.driverData.reduce((sum, driver) => sum + (driver.weeklyActuals[weekIndex] || 0), 0);
+        const revisedGoal = weekGoal + rolloverGap;
+        const gap = Math.max(0, revisedGoal - actual);
+        const asp = parseFloat(document.querySelector(`.what-if-asp[data-week-index="${weekIndex}"]`).value) || 0;
+        const upt = parseFloat(document.querySelector(`.what-if-upt[data-week-index="${weekIndex}"]`).value) || 0;
+        const pcGoal = asp * upt;
+        const reqTransactions = (pcGoal > 0) ? Math.ceil(gap / pcGoal) : 0;
+        const surplus = (reqTransactions * pcGoal) - gap;
+        document.getElementById(`what-if-pc-${weekIndex}`).value = formatCurrency(pcGoal);
+        document.getElementById(`what-if-req-${weekIndex}`).value = reqTransactions > 0 ? reqTransactions : '---';
+        const successMessage = document.getElementById('what-if-success-message');
+        if(reqTransactions > 0) {
+            successMessage.innerHTML = `Success! For Week ${weekIndex + 1}, achieving <strong>${reqTransactions}</strong> transactions at this new goal rate would close the gap and generate a surplus of <strong>${formatCurrency(surplus, true)}</strong>.`;
+            successMessage.classList.remove('hidden');
+        } else { successMessage.classList.add('hidden'); }
+    }
+    
+    function updateSalesMetricsClues(data) {
+        const container = document.getElementById('sales-metrics-clues-container');
+        if (!data.salesMetrics) return;
+        let html = `<h3 class="section-title">PROBLEM CLUES: SALES METRICS</h3><div class="sales-metrics-table bg-white p-4 shadow-md rounded-lg"><div class="grid grid-cols-6 gap-2 font-bold text-center text-sm p-2 border-b"><div>Plan</div><div>$ PC</div><div>$ ASP</div><div>UPT</div><div>Transactions</div><div>Revenue</div></div>`;
+        for (let i = 0; i < 5; i++) {
+            const actual = data.salesMetrics.actuals[i]; const goal = data.salesMetrics.goal[i];
+            const pc = actual.asp * actual.upt; const revenue = pc * actual.transactions;
+            const goalPc = goal.asp * goal.upt; const goalRevenue = goalPc * goal.transactions;
+            const pcClass = pc < goalPc && goalPc > 0 ? 'negative' : '';
+            const revenueClass = revenue < goalRevenue && goalRevenue > 0 ? 'negative' : '';
+            const aspClass = actual.asp < goal.asp && goal.asp > 0 ? 'negative' : '';
+            const uptClass = actual.upt < goal.upt && goal.upt > 0 ? 'negative' : '';
+            const transClass = actual.transactions < goal.transactions && goal.transactions > 0 ? 'negative' : '';
+            html += `<div class="grid grid-cols-6 gap-2 items-center p-1 border-b"><div class="font-medium">Week ${i+1} (Actual)</div><input type="text" value="${formatCurrency(pc)}" class="bg-gray-100 ${pcClass}" readonly><input type="number" value="${actual.asp}" data-metric-type="actuals" data-metric-field="asp" data-week-index="${i}" class="${aspClass}"><input type="number" value="${actual.upt}" data-metric-type="actuals" data-metric-field="upt" data-week-index="${i}" class="${uptClass}"><input type="number" value="${actual.transactions}" data-metric-type="actuals" data-metric-field="transactions" data-week-index="${i}" class="${transClass}"><input type="text" value="${formatCurrency(revenue)}" class="bg-gray-100 ${revenueClass}" readonly></div>`;
+        }
+        for (let i = 0; i < 5; i++) {
+            const goal = data.salesMetrics.goal[i]; const pc = goal.asp * goal.upt; const revenue = pc * goal.transactions;
+            html += `<div class="grid grid-cols-6 gap-2 items-center p-1 border-b bg-gray-50"><div class="font-medium text-blue-600">Week ${i+1} (Goal)</div><input type="text" value="${formatCurrency(pc)}" class="bg-gray-100" readonly><input type="number" value="${goal.asp}" data-metric-type="goal" data-metric-field="asp" data-week-index="${i}"><input type="number" value="${goal.upt}" data-metric-type="goal" data-metric-field="upt" data-week-index="${i}"><input type="number" value="${goal.transactions}" data-metric-type="goal" data-metric-field="transactions" data-week-index="${i}"><input type="text" value="${formatCurrency(revenue)}" class="bg-gray-100" readonly></div>`;
+        }
+        container.innerHTML = html + `</div>`;
+    }
+
+    function buildSalesFunnelHTML() {
+        const container = document.getElementById('sales-metrics-inputs');
+        container.innerHTML = `
+            <div><label class="block text-sm font-medium">Leads Generated</label><input type="number" id="funnel-leads" class="mt-1 w-full"></div>
+            <div><label class="block text-sm font-medium"># of Qualified Prospects</label><input type="number" id="funnel-prospects" class="mt-1 w-full"></div>
+            <div><label class="block text-sm font-medium"># of Sales Pitches</label><input type="number" id="funnel-pitches" class="mt-1 w-full bg-gray-100" readonly></div>
+            <div><label class="block text-sm font-medium">Sales Closed</label><input type="number" id="funnel-sales" class="mt-1 w-full"></div>
+            <div class="p-2 rounded bg-blue-50"><label class="text-sm font-medium text-blue-800">Lead-to-Prospect %</label><input type="text" id="funnel-lead-prospect-rate" class="mt-1 w-full bg-gray-100 font-bold" readonly></div>
+            <div class="p-2 rounded bg-blue-50"><label class="text-sm font-medium text-blue-800">Closing Rate % (Pitch-to-Sale)</label><input type="text" id="funnel-pitch-sale-rate" class="mt-1 w-full bg-gray-100 font-bold" readonly></div>
+            <div class="p-2 rounded bg-green-50"><label class="text-sm font-medium text-green-800">Overall Conversion %</label><input type="text" id="funnel-overall-rate" class="mt-1 w-full bg-gray-100 font-bold" readonly></div>
+            <div><label class="block text-sm font-medium">$ per Customer ($PC)</label><input type="number" id="funnel-pc" class="mt-1 w-full"></div>
+            <div class="p-2 rounded bg-green-50 lg:col-start-2 lg:col-span-2"><label class="text-sm font-medium text-green-800">Funnel Revenue</label><input type="text" id="funnel-revenue" class="mt-1 w-full bg-gray-100 font-bold" readonly></div>`;
+        const toggleContainer = document.getElementById('funnel-week-toggle');
+        toggleContainer.innerHTML = ['W1','W2','W3','W4','W5','MTD'].map((w,i) => `<button class="funnel-toggle-btn ${i === 5 ? 'active' : ''}" data-week="${i}">${w}</button>`).join('');
+    }
+
+    function updateSalesFunnelView() {
+        if (!currentUser.data.salesFunnel) return;
+        let leads=0, prospects=0, sales=0, pc = 0;
+        if (currentFunnelWeek < 5) {
+            const weekData = currentUser.data.salesFunnel[currentFunnelWeek];
+            leads = weekData.leads; prospects = weekData.prospects; sales = weekData.sales; pc = weekData.pc;
+        } else {
+            let totalPcValue = 0; let salesCount = 0;
+            currentUser.data.salesFunnel.forEach(w => { 
+                leads += w.leads; prospects += w.prospects; sales += w.sales; 
+                if (w.sales > 0) { totalPcValue += w.pc * w.sales; salesCount += w.sales; }
+            });
+            pc = salesCount > 0 ? totalPcValue / salesCount : 0;
+        }
+        const pitches = prospects;
+        document.getElementById('funnel-leads').value = leads;
+        document.getElementById('funnel-prospects').value = prospects;
+        document.getElementById('funnel-pitches').value = pitches;
+        document.getElementById('funnel-sales').value = sales;
+        document.getElementById('funnel-pc').value = pc.toFixed(0);
+        document.getElementById('funnel-lead-prospect-rate').value = formatPercent(leads > 0 ? (prospects / leads) * 100 : 0);
+        document.getElementById('funnel-pitch-sale-rate').value = formatPercent(pitches > 0 ? (sales / pitches) * 100 : 0);
+        document.getElementById('funnel-overall-rate').value = formatPercent(leads > 0 ? (sales / leads) * 100 : 0);
+        document.getElementById('funnel-revenue').value = formatCurrency(sales * pc);
+    }
+    
+    async function generateAIAnalysis() {
+        const analysisButton = document.querySelector('button[onclick="generateAIAnalysis()"]');
+        analysisButton.disabled = true;
+        analysisButton.textContent = '🤖 Generating Analysis...';
+        
+        try {
+            // Gather current business data for analysis
+            const data = currentUser.data;
+            const totalActual = data.driverData.reduce((sum, d) => sum + d.weeklyActuals.reduce((s, v) => s + v, 0), 0);
+            const totalGoal = data.monthlyRevenueGoal;
+            const progressPercent = totalGoal > 0 ? (totalActual / totalGoal) * 100 : 0;
+            
+            // Calculate driver performance
+            const driverPerformance = data.driverNames.map((name, i) => {
+                const driver = data.driverData[i];
+                if (!driver) return null;
+                const actual = driver.weeklyActuals.reduce((sum, val) => sum + val, 0);
+                const goal = (data.monthlyRevenueGoal * driver.percent) / 100;
+                return {
+                    name,
+                    actual,
+                    goal,
+                    variance: actual - goal,
+                    performancePercent: goal > 0 ? (actual / goal) * 100 : 0
+                };
+            }).filter(Boolean);
+
+            const prompt = `As a business performance analyst, analyze this business data and provide actionable insights:
+
+BUSINESS: ${currentUser.company}
+MONTH: ${data.month} ${data.year}
+MONTHLY GOAL: $${data.monthlyRevenueGoal.toLocaleString()}
+ACTUAL REVENUE: $${totalActual.toLocaleString()}
+PROGRESS: ${progressPercent.toFixed(1)}%
+
+REVENUE DRIVERS PERFORMANCE:
+${driverPerformance.map(d => `${d.name}: $${d.actual.toLocaleString()} actual vs $${d.goal.toLocaleString()} goal (${d.performancePercent.toFixed(1)}%)`).join('\n')}
+
+ROOT CAUSE OBSERVATIONS:
+Behavior: ${document.getElementById('obs-behavior')?.value || 'Not specified'}
+Attitude: ${document.getElementById('obs-attitude')?.value || 'Not specified'}
+Product/Service: ${document.getElementById('obs-product')?.value || 'Not specified'}
+Systems: ${document.getElementById('obs-systems')?.value || 'Not specified'}
+Customer: ${document.getElementById('obs-customer')?.value || 'Not specified'}
+
+Provide:
+1. Key performance insights (2-3 bullet points)
+2. Primary gaps identified (2-3 specific issues)
+3. Recommended immediate actions (3-5 actionable items)
+4. Success metrics to track
+
+Keep response concise but actionable for business improvement.`;
+
+            const response = await fetch("https://api.anthropic.com/v1/messages", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    model: "claude-sonnet-4-20250514",
+                    max_tokens: 1000,
+                    messages: [
+                        { role: "user", content: prompt }
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const analysisText = result.content[0].text;
+
+            // Display the analysis
+            const analysisContainer = document.getElementById('ai-analysis-result');
+            analysisContainer.innerHTML = `
+                <h4 class="font-bold text-lg mb-3" style="color: var(--coach-nic-dark-blue);">AI Performance Analysis</h4>
+                <div class="prose max-w-none">
+                    ${analysisText.split('\n').map(line => {
+                        if (line.trim().startsWith('1.') || line.trim().startsWith('2.') || line.trim().startsWith('3.') || line.trim().startsWith('4.')) {
+                            return `<h5 class="font-semibold mt-4 mb-2" style="color: var(--coach-nic-medium-blue);">${line}</h5>`;
+                        } else if (line.trim().startsWith('-') || line.trim().startsWith('•')) {
+                            return `<li class="ml-4">${line.substring(1).trim()}</li>`;
+                        } else if (line.trim()) {
+                            return `<p class="mb-2">${line}</p>`;
+                        }
+                        return '';
+                    }).join('')}
+                </div>
+            `;
+            analysisContainer.classList.remove('hidden');
+
+            // Auto-populate action plan
+            const actionPlanContainer = document.getElementById('action-plan-content');
+            actionPlanContainer.innerHTML = `
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h5 class="font-bold text-green-800 mb-3">Generated Action Plan</h5>
+                    <div class="text-sm text-green-700">
+                        ${analysisText.split('\n').filter(line => 
+                            line.includes('action') || line.includes('recommend') || line.includes('should')
+                        ).map(line => `<p class="mb-2">${line}</p>`).join('')}
+                    </div>
+                </div>
+            `;
+
+            showNotification("Real AI analysis completed successfully!");
+
+        } catch (error) {
+            console.error("Error generating AI analysis:", error);
+            showNotification("AI analysis failed. Please try again.");
+            
+            // Fallback analysis based on data patterns
+            const fallbackAnalysis = generateFallbackAnalysis();
+            const analysisContainer = document.getElementById('ai-analysis-result');
+            analysisContainer.innerHTML = fallbackAnalysis;
+            analysisContainer.classList.remove('hidden');
+        } finally {
+            analysisButton.disabled = false;
+            analysisButton.textContent = '🤖 Generate AI Analysis';
+        }
+    }
+
+    function generateFallbackAnalysis() {
+        const data = currentUser.data;
+        const totalActual = data.driverData.reduce((sum, d) => sum + d.weeklyActuals.reduce((s, v) => s + v, 0), 0);
+        const progressPercent = data.monthlyRevenueGoal > 0 ? (totalActual / data.monthlyRevenueGoal) * 100 : 0;
+        
+        let analysis = `<h4 class="font-bold text-lg mb-3" style="color: var(--coach-nic-dark-blue);">Business Performance Analysis</h4>`;
+        
+        if (progressPercent >= 100) {
+            analysis += `<div class="bg-green-50 p-4 rounded-lg mb-4">
+                <h5 class="font-semibold text-green-800 mb-2">Strong Performance Identified</h5>
+                <p>Your business is exceeding revenue targets at ${progressPercent.toFixed(1)}% of goal.</p>
+                <p><strong>Focus:</strong> Maintain momentum and identify scalable practices.</p>
+            </div>`;
+        } else if (progressPercent >= 80) {
+            analysis += `<div class="bg-yellow-50 p-4 rounded-lg mb-4">
+                <h5 class="font-semibold text-yellow-800 mb-2">On Track with Room for Optimization</h5>
+                <p>Currently at ${progressPercent.toFixed(1)}% of revenue goal - solid performance with improvement opportunities.</p>
+                <p><strong>Focus:</strong> Fine-tune underperforming revenue drivers.</p>
+            </div>`;
+        } else {
+            analysis += `<div class="bg-red-50 p-4 rounded-lg mb-4">
+                <h5 class="font-semibold text-red-800 mb-2">Performance Gap Requires Immediate Action</h5>
+                <p>Currently at ${progressPercent.toFixed(1)}% of revenue goal - significant gap identified.</p>
+                <p><strong>Focus:</strong> Implement the P.R.O.F.I.T. system immediately.</p>
+            </div>`;
+        }
+
+        // Analyze revenue drivers
+        const worstDriver = data.driverNames.map((name, i) => {
+            const driver = data.driverData[i];
+            if (!driver) return null;
+            const actual = driver.weeklyActuals.reduce((sum, val) => sum + val, 0);
+            const goal = (data.monthlyRevenueGoal * driver.percent) / 100;
+            return { name, variance: actual - goal, percent: goal > 0 ? (actual / goal) * 100 : 0 };
+        }).filter(Boolean).sort((a, b) => a.variance - b.variance)[0];
+
+        if (worstDriver && worstDriver.variance < 0) {
+            analysis += `<div class="bg-blue-50 p-4 rounded-lg">
+                <h5 class="font-semibold text-blue-800 mb-2">Priority Action Item</h5>
+                <p><strong>${worstDriver.name}</strong> is the largest revenue gap at ${worstDriver.percent.toFixed(1)}% of goal.</p>
+                <p>Recommended: Apply focused improvement strategies to this revenue driver first.</p>
+            </div>`;
+        }
+
+        return analysis;
+    }
+
+    async function generatePDFReport() {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const data = currentUser.data;
+        
+        // Page 1: Executive Summary
+        addPDFHeader(pdf, 'BUSINESS PERFORMANCE REPORT');
+        
+        let yPos = 40;
+        
+        // Company info
+        pdf.setFontSize(14);
+        pdf.setTextColor(0, 45, 98);
+        pdf.text(`Company: ${currentUser.company}`, 20, yPos);
+        yPos += 8;
+        pdf.text(`Period: ${data.month} ${data.year}`, 20, yPos);
+        yPos += 8;
+        pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 20, yPos);
+        yPos += 15;
+        
+        // Key metrics summary
+        const totalActual = data.driverData.reduce((sum, d) => sum + d.weeklyActuals.reduce((s, v) => s + v, 0), 0);
+        const progressPercent = data.monthlyRevenueGoal > 0 ? (totalActual / data.monthlyRevenueGoal) * 100 : 0;
+        const variance = totalActual - data.monthlyRevenueGoal;
+        
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('EXECUTIVE SUMMARY', 20, yPos);
+        yPos += 10;
+        
+        pdf.text(`Monthly Revenue Goal: ${formatCurrency(data.monthlyRevenueGoal)}`, 25, yPos);
+        yPos += 6;
+        pdf.text(`Actual Revenue (MTD): ${formatCurrency(totalActual)}`, 25, yPos);
+        yPos += 6;
+        pdf.text(`Progress: ${progressPercent.toFixed(1)}%`, 25, yPos);
+        yPos += 6;
+        
+        // Color code the variance
+        if (variance >= 0) {
+            pdf.setTextColor(34, 197, 94); // Green
+        } else {
+            pdf.setTextColor(239, 68, 68); // Red
+        }
+        pdf.text(`Variance: ${formatCurrency(variance, true)}`, 25, yPos);
+        pdf.setTextColor(0, 0, 0);
+        yPos += 15;
+        
+        // Revenue drivers performance
+        pdf.text('REVENUE DRIVERS PERFORMANCE', 20, yPos);
+        yPos += 10;
+        
+        data.driverNames.forEach((name, i) => {
+            if (!name.trim()) return;
+            const driver = data.driverData[i];
+            if (!driver) return;
+            
+            const actual = driver.weeklyActuals.reduce((sum, val) => sum + val, 0);
+            const goal = (data.monthlyRevenueGoal * driver.percent) / 100;
+            const driverVariance = actual - goal;
+            
+            pdf.text(`${name}:`, 25, yPos);
+            pdf.text(`${formatCurrency(actual)} / ${formatCurrency(goal)}`, 80, yPos);
+            
+            if (driverVariance >= 0) {
+                pdf.setTextColor(34, 197, 94);
+            } else {
+                pdf.setTextColor(239, 68, 68);
+            }
+            pdf.text(`(${formatCurrency(driverVariance, true)})`, 140, yPos);
+            pdf.setTextColor(0, 0, 0);
+            yPos += 6;
+        });
+        
+        // Save the PDF
+        const fileName = `Business-Gap-Analysis-${currentUser.company.replace(/\s+/g, '-')}-${data.month}-${data.year}.pdf`;
+        pdf.save(fileName);
+    }
+    
+    function addPDFHeader(pdf, title) {
+        // Header background
+        pdf.setFillColor(0, 45, 98);
+        pdf.rect(0, 0, 210, 25, 'F');
+        
+        // Title
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(title, 20, 15);
+        
+        // Logo placeholder (you could add actual logo here)
+        pdf.setFontSize(10);
+        pdf.text('BUSINESS GAP FINDER™', 140, 12);
+        pdf.text('Powered by Coach Nic DC', 140, 18);
+        
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont('helvetica', 'normal');
+    }
+
+    // Data persistence and CSV functionality
+    function generateCSVBackup() {
+        if (!currentUser) return;
+        
+        const data = currentUser.data;
+        let csvContent = "data:text/csv;charset=utf-8,";
+        
+        // Header information
+        csvContent += "Business Gap Finder Data Export\n";
+        csvContent += `Company,${currentUser.company}\n`;
+        csvContent += `Industry,${currentUser.industry || 'Not specified'}\n`;
+        csvContent += `Period,${data.month} ${data.year}\n`;
+        csvContent += `Monthly Goal,${data.monthlyRevenueGoal}\n`;
+        csvContent += `Export Date,${new Date().toLocaleDateString()}\n\n`;
+        
+        // Revenue Drivers Data
+        csvContent += "Revenue Drivers Performance\n";
+        csvContent += "Driver Name,Percentage,Week 1,Week 2,Week 3,Week 4,Week 5,Total Actual,Goal,Variance\n";
+        
+        data.driverNames.forEach((name, i) => {
+            if (!name.trim()) return;
+            const driver = data.driverData[i];
+            if (!driver) return;
+            
+            const totalActual = driver.weeklyActuals.reduce((sum, val) => sum + val, 0);
+            const goal = (data.monthlyRevenueGoal * driver.percent) / 100;
+            const variance = totalActual - goal;
+            
+            csvContent += `${name},${driver.percent}%,${driver.weeklyActuals.join(',')},${totalActual},${goal},${variance}\n`;
+        });
+        
+        // Create download link
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `business-gap-data-${currentUser.company.replace(/\s+/g, '-')}-${data.month}-${data.year}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // Auto-save functionality
+    function enableAutoSave() {
+        let saveTimeout;
+        
+        const autoSave = () => {
+            if (!currentUser) return;
+            
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                try {
+                    const dataToSave = {
+                        user: currentUser,
+                        timestamp: new Date().toISOString(),
+                        version: '2.0' // Updated version for Priority 2 features
+                    };
+                    localStorage.setItem(`businessGapFinder_${currentUser.email}`, JSON.stringify(dataToSave));
+                    console.log("Auto-saved data");
+                } catch (error) {
+                    console.error("Auto-save failed:", error);
+                }
+            }, 2000);
+        };
+        
+        document.addEventListener('input', autoSave);
+        document.addEventListener('change', autoSave);
+    }
+    
+    function loadSavedData(email) {
+        try {
+            const saved = localStorage.getItem(`businessGapFinder_${email}`);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.user && parsed.user.data) {
+                    return parsed.user;
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load saved data:", error);
+        }
+        return null;
+    }
+    
+    function performDataValidationAndAutoCalculation() {
+        if (!currentUser || !currentUser.data) return;
+        
+        const data = currentUser.data;
+        let calculationsPerformed = 0;
+        
+        // Ensure all revenue drivers have complete data structure
+        while (data.driverData.length < data.driverNames.length) {
+            data.driverData.push({
+                percent: 0,
+                weeklyActuals: [0, 0, 0, 0, 0]
+            });
+            calculationsPerformed++;
+        }
+        
+        // Auto-calculate missing percentages if they don't add up to 100%
+        const totalPercent = data.driverData.reduce((sum, driver) => sum + (driver.percent || 0), 0);
+        if (totalPercent === 0 && data.driverNames.length > 0) {
+            const evenPercent = Math.floor(100 / data.driverNames.filter(n => n.trim()).length);
+            let remaining = 100;
+            
+            data.driverData.forEach((driver, i) => {
+                if (data.driverNames[i] && data.driverNames[i].trim()) {
+                    if (remaining >= evenPercent) {
+                        driver.percent = evenPercent;
+                        remaining -= evenPercent;
+                    } else {
+                        driver.percent = remaining;
+                        remaining = 0;
+                    }
+                    calculationsPerformed++;
+                }
+            });
+        }
+        
+        // Initialize sales metrics if missing
+        if (!data.salesMetrics) {
+            data.salesMetrics = {
+                actuals: Array(5).fill().map(() => ({ asp: 0, upt: 0, transactions: 0 })),
+                goal: Array(5).fill().map(() => ({ asp: 0, upt: 0, transactions: 0 }))
+            };
+            calculationsPerformed++;
+        }
+        
+        // Initialize sales funnel if missing
+        if (!data.salesFunnel) {
+            data.salesFunnel = Array(5).fill().map(() => ({ leads: 0, prospects: 0, sales: 0, pc: 0 }));
+            calculationsPerformed++;
+        }
+        
+        if (calculationsPerformed > 0) {
+            console.log(`Auto-calculated ${calculationsPerformed} missing data points`);
+            updateAllData(data);
+        }
+    }
+    
+    // CSV Import functionality
+    function addCSVImportButton() {
+        const headerSection = document.querySelector('.header-section .flex.flex-wrap.items-center.justify-end');
+        if (headerSection && !document.getElementById('csv-import-btn')) {
+            const importBtn = document.createElement('button');
+            importBtn.id = 'csv-import-btn';
+            importBtn.className = 'secondary-btn text-sm';
+            importBtn.innerHTML = '📊 Import CSV';
+            importBtn.onclick = triggerCSVImport;
+            
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.csv';
+            fileInput.style.display = 'none';
+            fileInput.id = 'csv-file-input';
+            fileInput.onchange = handleCSVImport;
+            
+            headerSection.insertBefore(importBtn, headerSection.firstChild);
+            document.body.appendChild(fileInput);
+        }
+    }
+    
+    function triggerCSVImport() {
+        document.getElementById('csv-file-input').click();
+    }
+    
+    function handleCSVImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                parseCSVAndUpdateData(e.target.result);
+                showNotification("CSV data imported successfully!");
+            } catch (error) {
+                console.error("CSV import failed:", error);
+                showNotification("CSV import failed. Please check file format.");
+            }
+        };
+        reader.readAsText(file);
+    }
+    
+    function parseCSVAndUpdateData(csvText) {
+        const lines = csvText.split('\n').map(line => line.trim()).filter(line => line);
+        let currentSection = '';
+        let detectedIndustry = null;
+        
+        lines.forEach(line => {
+            // Check for industry indicators in CSV
+            Object.keys(industryTemplates).forEach(key => {
+                const template = industryTemplates[key];
+                if (template.driverNames.some(name => line.includes(name))) {
+                    detectedIndustry = key;
+                }
+            });
+            
+            if (line.startsWith('Revenue Drivers Performance')) {
+                currentSection = 'drivers';
+                return;
+            }
+            
+            if (line.startsWith('Driver Name,') || line.startsWith('Week,')) {
+                return; // Skip headers
+            }
+            
+            if (currentSection === 'drivers' && line.includes(',')) {
+                const parts = line.split(',');
+                if (parts.length >= 6) {
+                    const driverName = parts[0];
+                    const weeklyData = parts.slice(2, 7).map(val => parseFloat(val) || 0);
+                    
+                    // Find or create driver
+                    let driverIndex = currentUser.data.driverNames.indexOf(driverName);
+                    if (driverIndex === -1) {
+                        currentUser.data.driverNames.push(driverName);
+                        driverIndex = currentUser.data.driverNames.length - 1;
+                    }
+                    
+                    if (!currentUser.data.driverData[driverIndex]) {
+                        currentUser.data.driverData[driverIndex] = { percent: 0, weeklyActuals: [0, 0, 0, 0, 0] };
+                    }
+                    
+                    currentUser.data.driverData[driverIndex].weeklyActuals = weeklyData;
+                }
+            }
+        });
+        
+        // Set industry if detected
+        if (detectedIndustry && detectedIndustry !== currentUser.industry) {
+            currentUser.industry = detectedIndustry;
+            showNotification(`Detected ${industryTemplates[detectedIndustry].name} industry from imported data`);
+        }
+        
+        updateAllData(currentUser.data);
+    }
+
+    function addBusinessUnit() { 
+        showNotification("New business unit added (simulation).") 
+    }
+    
+    function initializeTabs() {
+        document.getElementById('tab-container').addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.dataset.target) {
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.replace('tab-active', 'tab-inactive'));
+                e.target.classList.replace('tab-inactive', 'tab-active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(e.target.dataset.target).classList.remove('hidden');
+            }
+        });
+    }
+
+    function initializeChecklistData(data) {
+        data.salesProcess = { personAssigned: '', behaviors: [
+            { category: 'Prepare', items: [ { text: 'Did the seller know the Targeted Market Segment/Audience?', checked: false }, { text: 'Did the seller know the Sales Emphasis/Goal?', checked: false }, { text: 'Did the seller know the Sales Objectives?', checked: false }, { text: 'Did the seller know the Expected Outcome Specifics?', checked: false }, { text: 'Did the seller have the Supported Sales Materials Needed?', checked: false }, { text: 'Did the seller have Note Taking Materials?', checked: false } ] },
+            { category: 'Rapport', items: [ { text: 'Did the seller exchange names with the customer?', checked: false }, { text: 'Did the seller use friendly conversation to build rapport with life-style questions?', checked: false }, { text: 'Did the seller restate the customer\'s answers?', checked: false }, { text: 'Did the seller ask about customer\'s occupation?', checked: false }, { text: 'Did the seller ask about family life?', checked: false } ] },
+            { category: 'Observe and Offer', items: [ { text: 'Did the seller recommend the right products and/or services?', checked: false }, { text: 'Did the seller encourage the customer to demo product/service?', checked: false }, { text: 'Did the seller demonstrate how the features will benefit the customer?', checked: false }, { text: 'Did the seller offer appropriate attachments making for a total solution?', checked: false }, { text: 'Did the seller use appropriate selling aids?', checked: false }, { text: 'Did the seller inform customer about loyalty program?', checked: false } ] },
+            { category: 'Fix Objection', items: [ { text: 'Did the seller ask for the reason for the objections?', checked: false }, { text: 'Did the seller acknowledge customer\'s concerns?', checked: false }, { text: 'Did the seller respond with a solution?', checked: false } ] },
+            { category: 'Invoke the Yes', items: [ { text: 'Did the seller move the process forward to closing?', checked: false }, { text: 'Did the seller ask for the sale?', checked: false } ] },
+            { category: 'Take the Money and Wrap', items: [ { text: 'Did the seller reinforce that the customer has made the right choice to meet their needs?', checked: false }, { text: 'Did the seller complete next steps process?', checked: false }, { text: 'Did the seller ask for referrals?', checked: false } ] }
+        ]};
+        data.managementRhythm = { personAssigned: '', behaviors: [
+            { category: 'Revenue', items: [ { text: '$ Amount', checked: false, frequency: 'Daily' }, { text: '$PC', checked: false, frequency: 'Daily' }, { text: 'ASP', checked: false, frequency: 'Daily' }, { text: 'UPT', checked: false, frequency: 'Daily' }, { text: 'Drivers', checked: false, frequency: 'Daily' } ] },
+            { category: 'Margin', items: [ { text: 'GMD $', checked: false, frequency: 'Weekly' }, { text: 'GMP%', checked: false, frequency: 'Weekly' }, { text: 'EPUs', checked: false, frequency: 'Weekly' }, { text: 'COS', checked: false, frequency: 'Weekly' } ] },
+            { category: 'Sales Efficiency', items: [ { text: 'Sales Conversion', checked: false, frequency: 'Weekly' }, { text: '# of Prospects', checked: false, frequency: 'Weekly' }, { text: '# of Transactions', checked: false, frequency: 'Weekly' } ] },
+            { category: 'Gaps Strategic Planning', items: [ { text: 'Overall Sales Gaps', checked: false, frequency: 'Monthly' }, { text: 'Analysis', checked: false, frequency: 'Monthly' }, { text: 'Improvement Plan', checked: false, frequency: 'Monthly' } ] }
+        ]};
+        data.orderSystem = { personAssigned: '', behaviors: [
+            { category: 'Order Taking', items: [ { text: 'Clients make appointments via website', checked: true }, { text: 'Clients recevie email confirmation', checked: true }, { text: 'Clients recevie email of client intake form', checked: true }, { text: 'Get email appointment reminders', checked: true }, { text: 'Appointments appear on appointment calendar', checked: true }, { text: 'TBA', checked: false } ] },
+            { category: 'Order Delivering', items: [ { text: 'Client is informed of beauty and skin care plan', checked: false }, { text: 'Treatment/services are rendered', checked: false }, { text: 'Book client\'s next appointment', checked: false }, { text: 'Ask clients for referrals', checked: false }, { text: 'TBA', checked: false }, { text: 'TBA', checked: false }, { text: 'TBA', checked: false } ] }
+        ]};
+        data.merchandising = { personAssigned: '', behaviors: [
+            { category: 'Step 1: Customer Experience', items: [ { text: 'Did the merchandiser show pictures of happy clients', checked: true }, { text: 'Did the merchandiser show videos of customers using the products/services', checked: false }, { text: 'TBA', checked: false } ] },
+            { category: 'Step 2: Demo Product/Service', items: [ { text: 'TBA', checked: false }, { text: 'TBA', checked: false }, { text: 'TBA', checked: false } ] },
+            { category: 'Step 3: Energy and Mood', items: [ { text: 'TBA', checked: false }, { text: 'TBA', checked: false }, { text: 'TBA', checked: false } ] },
+            { category: 'Step 4: TBA', items: [ { text: 'TBA', checked: false }, { text: 'TBA', checked: false }, { text: 'TBA', checked: false } ] },
+            { category: 'Step 5: TBA', items: [ { text: 'TBA', checked: false }, { text: 'TBA', checked: false }, { text: 'TBA', checked: false } ] },
+        ]};
+    }
+
+    function createChecklistHTML(checklistData, systemName, options = {}) {
+        let bodyHTML = '';
+        let totalBehaviors = 0, checkedBehaviors = 0;
+        const tallyId = `${systemName.replace(/([A-Z])/g, '-$1').toLowerCase()}-tally`;
+        const showFrequency = options.showFrequency || false;
+        let headerHTML = `<th style="width: 5%;"></th><th style="width: ${showFrequency ? '65%' : '95%'}">The Behaviors</th>`;
+        if (showFrequency) {
+            headerHTML += `<th>Frequency</th>`;
+        }
+        
+        checklistData.behaviors.forEach((category, catIndex) => {
+            bodyHTML += `<tr class="checklist-category"><td colspan="${showFrequency ? 3 : 2}" class="font-bold text-lg">${category.category}</td></tr>`;
+            category.items.forEach((item, itemIndex) => {
+                totalBehaviors++;
+                if (item.checked) checkedBehaviors++;
+                let frequencyDropdown = '';
+                if (showFrequency) {
+                    const frequencies = ['Daily', 'Weekly', 'Monthly'];
+                    const optionsHTML = frequencies.map(f => `<option value="${f}" ${item.frequency === f ? 'selected' : ''}>${f}</option>`).join('');
+                    frequencyDropdown = `<td><select data-system="${systemName}" data-cat-index="${catIndex}" data-item-index="${itemIndex}" data-field="frequency">${optionsHTML}</select></td>`;
+                }
+
+                bodyHTML += `<tr>
+                    <td class="w-10"><input type="checkbox" ${item.checked ? 'checked' : ''} class="w-5 h-5" data-system="${systemName}" data-cat-index="${catIndex}" data-item-index="${itemIndex}"></td>
+                    <td class="editable-behavior" data-system="${systemName}" data-cat-index="${catIndex}" data-item-index="${itemIndex}">${item.text}</td>
+                    ${frequencyDropdown}
+                </tr>`;
+            });
+            bodyHTML += `<tr><td colspan="${showFrequency ? 3 : 2}"><button class="text-sm text-blue-600 hover:underline" data-system="${systemName}" data-cat-index="${catIndex}" onclick="addBehavior(this)">+ Add Behavior</button></td></tr>`;
+        });
+
+        const percentage = totalBehaviors > 0 ? (checkedBehaviors / totalBehaviors) * 100 : 0;
+        const tallyEl = document.getElementById(tallyId);
+        if(tallyEl) tallyEl.innerHTML = `${checkedBehaviors} / ${totalBehaviors} Behaviors Checked - <span class="${percentage === 100 ? 'text-green-600' : 'text-blue-800'}">${percentage.toFixed(0)}% Complete</span>`;
+        
+        return `<table class="w-full checklist-table text-base"><thead><tr>${headerHTML}</tr></thead><tbody>${bodyHTML}</tbody></table>`;
+    }
+
+    function updateSalesProcessChecklist(data) { if(data) { document.getElementById('sales-process-checklist').innerHTML = createChecklistHTML(data, 'salesProcess'); document.getElementById('sales-process-person').value = data.personAssigned || ''; } }
+    function updateManagementRhythmChecklist(data) { if(data) { document.getElementById('management-rhythm-checklist').innerHTML = createChecklistHTML(data, 'managementRhythm', { showFrequency: true }); document.getElementById('management-rhythm-person').value = data.personAssigned || ''; } }
+    function updateOrderSystemChecklist(data) { if(data) { document.getElementById('order-system-checklist').innerHTML = createChecklistHTML(data, 'orderSystem'); document.getElementById('order-system-person').value = data.personAssigned || ''; } }
+    function updateMerchandisingChecklist(data) { if(data) { document.getElementById('merchandising-checklist').innerHTML = createChecklistHTML(data, 'merchandising'); document.getElementById('merchandising-person').value = data.personAssigned || ''; } }
+
+    function addBehavior(button) {
+        const { system, catIndex } = button.dataset;
+        const newBehaviorText = prompt("Enter the new behavior text:");
+        if (newBehaviorText && newBehaviorText.trim() !== "") {
+            currentUser.data[system].behaviors[catIndex].items.push({ text: newBehaviorText, checked: false });
+            updateAllData(currentUser.data);
+        }
+    }
+
+    // NEW: Mobile optimization functions
+    function checkMobileView() {
+        const isMobile = window.innerWidth < 768;
+        const app = document.getElementById('app-screen');
+        
+        if (isMobile) {
+            app.classList.add('mobile-optimized');
+            optimizeForMobile();
+        } else {
+            app.classList.remove('mobile-optimized');
+        }
+    }
+
+    function optimizeForMobile() {
+        // Optimize charts for mobile
+        if (charts.weekly) {
+            charts.weekly.options.responsive = true;
+            charts.weekly.options.maintainAspectRatio = false;
+        }
+        
+        // Add mobile-friendly input behaviors
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            input.setAttribute('inputmode', 'decimal');
+        });
+    }
+
+    // Auto-detect industry from revenue driver names
+    function detectIndustryFromDrivers(driverNames) {
+        if (!currentUser || currentUser.industry) return; // Don't override existing industry
+        
+        let bestMatch = null;
+        let bestScore = 0;
+        
+        Object.keys(industryTemplates).forEach(industryKey => {
+            const template = industryTemplates[industryKey];
+            let score = 0;
+            
+            driverNames.forEach(driverName => {
+                template.driverNames.forEach(templateDriver => {
+                    if (driverName.toLowerCase().includes(templateDriver.toLowerCase()) || 
+                        templateDriver.toLowerCase().includes(driverName.toLowerCase())) {
+                        score++;
+                    }
+                });
+            });
+            
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = industryKey;
+            }
+        });
+        
+        if (bestMatch && bestScore >= 2) { // Require at least 2 matches
+            currentUser.industry = bestMatch;
+            const template = industryTemplates[bestMatch];
+            document.getElementById('industry-display').textContent = template.name;
+            document.getElementById('industry-display').classList.remove('hidden');
+            showNotification(`Auto-detected industry: ${template.name}`);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeTabs();
+        buildSalesFunnelHTML();
+        enableAutoSave();
+        
+        // NEW: Mobile optimization
+        checkMobileView();
+        window.addEventListener('resize', checkMobileView);
+        
+        // NEW: Event handlers for Priority 2 features
+        document.getElementById('team-members-btn').addEventListener('click', showTeamModal);
+        document.getElementById('benchmarks-btn').addEventListener('click', showBenchmarksModal);
+        
+        document.getElementById('login-form-element').addEventListener('submit', (e) => { 
+            e.preventDefault(); 
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Check for saved data first
+            const savedUser = loadSavedData(email);
+            if (savedUser) {
+                currentUser = savedUser;
+                showApp();
+                populateData(currentUser.data);
+                performDataValidationAndAutoCalculation();
+                showNotification(`Welcome back, ${savedUser.name}!`);
+            } else {
+                showNotification('Demo mode only. Use demo buttons above.'); 
+            }
+        });
+        
+        document.getElementById('save-data').addEventListener('click', () => {
+            if (!currentUser) return;
+            
+            try {
+                const dataToSave = {
+                    user: currentUser,
+                    timestamp: new Date().toISOString(),
+                    version: '2.0'
+                };
+                
+                localStorage.setItem(`businessGapFinder_${currentUser.email}`, JSON.stringify(dataToSave));
+                showNotification("Data saved successfully!");
+                generateCSVBackup();
+                
+            } catch (error) {
+                console.error("Save failed:", error);
+                showNotification("Save failed. Please try again.");
+            }
+        });
+        
+        document.getElementById('download-pdf').addEventListener('click', async () => {
+            const button = document.getElementById('download-pdf');
+            button.disabled = true;
+            button.textContent = '📄 Generating...';
+            
+            try {
+                await generatePDFReport();
+                showNotification("PDF report generated successfully!");
+            } catch (error) {
+                console.error("PDF generation failed:", error);
+                showNotification("PDF generation failed. Please try again.");
+            } finally {
+                button.disabled = false;
+                button.textContent = '📄 PDF';
+            }
+        });
+        
+        document.getElementById('funnel-week-toggle').addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                currentFunnelWeek = parseInt(e.target.dataset.week);
+                document.querySelectorAll('.funnel-toggle-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                updateSalesFunnelView();
+            }
+        });
+
+        document.getElementById('scorecard-content').addEventListener('input', (e) => {
+            if (!currentUser || e.target.tagName !== 'INPUT') return;
+            const data = currentUser.data, target = e.target, val = target.type === 'number' ? parseFloat(target.value) || 0 : target.value;
+            switch(target.id){
+                case 'monthly-revenue-goal': data.monthlyRevenueGoal = val; break;
+                case 'revenue-drivers': 
+                    data.driverNames = val.split(',').map(d=>d.trim()); 
+                    // Auto-detect industry based on driver names
+                    detectIndustryFromDrivers(data.driverNames);
+                    break;
+                case 'week1-goal-percent': data.weeklyGoalPcts[0] = val; break;
+                case 'week2-goal-percent': data.weeklyGoalPcts[1] = val; break;
+                case 'week3-goal-percent': data.weeklyGoalPcts[2] = val; break;
+                case 'week4-goal-percent': data.weeklyGoalPcts[3] = val; break;
+                case 'week5-goal-percent': data.weeklyGoalPcts[4] = val; break;
+            }
+            if(target.dataset.inputType==='driverActual') data.driverData[target.dataset.driverIndex].weeklyActuals[target.dataset.weekIndex] = val;
+            if(target.dataset.inputType==='driverPercent') data.driverData[target.dataset.driverIndex].percent = val;
+            updateAllData(data);
+        });
+
+        document.getElementById('analysis-content').addEventListener('input', function(e) {
+            if (!currentUser) return;
+            const target = e.target;
+            if (target.closest('#sales-metrics-inputs')) {
+                const funnelData = currentFunnelWeek < 5 ? currentUser.data.salesFunnel[currentFunnelWeek] : null;
+                if(funnelData){
+                    funnelData.leads = parseFloat(document.getElementById('funnel-leads').value) || 0;
+                    funnelData.prospects = parseFloat(document.getElementById('funnel-prospects').value) || 0;
+                    funnelData.sales = parseFloat(document.getElementById('funnel-sales').value) || 0;
+                    funnelData.pc = parseFloat(document.getElementById('funnel-pc').value) || 0;
+                }
+                updateSalesFunnelView();
+            }
+            if (target.closest('#what-if-calculator-interactive')) { calculateWhatIfRow(parseInt(target.dataset.weekIndex)); }
+            if (target.dataset.metricType) {
+                const type = target.dataset.metricType, field = target.dataset.metricField, index = parseInt(target.dataset.weekIndex), value = parseFloat(target.value) || 0;
+                currentUser.data.salesMetrics[type][index][field] = value;
+                updateSalesMetricsClues(currentUser.data);
+            }
+        });
+
+        document.body.addEventListener('input', function(e) {
+            if (!currentUser) return;
+            const target = e.target;
+            if(target.id === 'sales-process-person') currentUser.data.salesProcess.personAssigned = target.value;
+            if(target.id === 'management-rhythm-person') currentUser.data.managementRhythm.personAssigned = target.value;
+            if(target.id === 'order-system-person') currentUser.data.orderSystem.personAssigned = target.value;
+            if(target.id === 'merchandising-person') currentUser.data.merchandising.personAssigned = target.value;
+
+            if (target.dataset.system) {
+                const { system, catIndex, itemIndex, field } = e.target.dataset;
+                const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+                const fieldToUpdate = field || 'checked';
+                if (currentUser.data[system] && currentUser.data[system].behaviors[catIndex] && currentUser.data[system].behaviors[catIndex].items[itemIndex]) {
+                    currentUser.data[system].behaviors[catIndex].items[itemIndex][fieldToUpdate] = value;
+                    updateAllData(currentUser.data);
+                }
+            }
+        });
+
+        document.body.addEventListener('click', function(e) {
+            if (e.target.classList.contains('editable-behavior')) {
+                const { system, catIndex, itemIndex } = e.target.dataset;
+                const currentText = e.target.textContent;
+                const newText = prompt("Edit behavior:", currentText);
+                if (newText && newText.trim() !== "") {
+                    currentUser.data[system].behaviors[catIndex].items[itemIndex].text = newText;
+                    updateAllData(currentUser.data);
+                }
+            }
+            
+            // NEW: Close modals when clicking outside
+            if (e.target.id === 'team-modal') {
+                closeTeamModal();
+            }
+            if (e.target.id === 'benchmarks-modal') {
+                closeBenchmarksModal();
+            }
+            if (e.target.id === 'pricing-modal') {
+                closePricingModal();
+            }
+        });
+    });
+</script>
+</body>
+</html>
